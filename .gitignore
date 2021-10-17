@@ -140,3 +140,7 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+backend/Documentacion/
+backend/polaris.tar
+backend/src/base-dir
+backend/src/core/test.py
