@@ -8,7 +8,7 @@ from polaris.sep1.views import PolarisPlainTextRenderer, generate_toml
 from polaris.integrations import registered_toml_func
 from polaris.models import Asset
 
-from config import settings
+from config.settings import base as settings
 
 
 @api_view(["GET"])
