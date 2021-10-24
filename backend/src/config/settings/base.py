@@ -20,7 +20,6 @@ def get_config_set(setting, config=config):
 
 SECRET_KEY = get_config_set("SECRET_KEY")
 
-
 ALLOWED_HOSTS = get_config_set("ALLOWED_HOSTS")
 
 
@@ -62,11 +61,13 @@ MIDDLEWARE = [
 POLARIS_STELLAR_NETWORK_PASSPHRASE = get_config_set("STELLAR_NETWORK_PASSPHRASE")
 POLARIS_HORIZON_URI = get_config_set("HORIZON_URI")
 POLARIS_HOST_URL = get_config_set("HOST_URL")
-# POLARIS_SEP10_HOME_DOMAINS = get_config_set("SEP10_HOME_DOMAINS")
 POLARIS_LOCAL_MODE = get_config_set("LOCAL_MODE")
-POLARIS_SERVER_JWT_KEY = get_config_set("SERVER_JWT_KEY")
-POLARIS_SIGNING_SEED = get_config_set("SIGNING_SEED")
 POLARIS_ACTIVE_SEPS = get_config_set("ACTIVE_SEPS")
+POLARIS_SEP10_HOME_DOMAINS = get_config_set("SEP10_HOME_DOMAINS")[0]
+POLARIS_SERVER_JWT_KEY = get_config_set("SEP10_JWT_KEY")
+POLARIS_SIGNING_SEED = get_config_set("SEP10_CLIENT_SEED")
+POLARIS_SIGNING_KEY = get_config_set("SEP10_CLIENT_KEY")
+POLARIS_SEP10_CLIENT_ATTRIBUTION_REQUIRED = get_config_set("SEP10_CLIENT_A_REQ")
 
 
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
