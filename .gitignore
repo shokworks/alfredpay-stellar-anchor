@@ -144,3 +144,4 @@ backend/Documentacion/
 backend/polaris.tar
 backend/src/base-dir
 backend/src/core/test.py
+polaris_app/
