@@ -1,6 +1,3 @@
-# Archivos del projecto.
-django-polaris/
-
 # Byte-compiled / optimized / DLL files
 python
 __pycache__/
@@ -140,6 +137,9 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Archivos del projecto.
+django-polaris/
 backend/Documentacion/
 backend/polaris.tar
 backend/src/base-dir
