@@ -144,7 +144,8 @@ backend/Documentacion/
 backend/polaris.tar
 backend/src/base-dir
 backend/src/core/test.py
-polaris_app/
-polaris_client/
+polaris_app/*
+polaris_client/*
 backend/src/core/testing/*.json
 backend/src/core/testing/tests2.py
+backend/src/etc/nginx/sites-available/stellar-anchor.bkp
