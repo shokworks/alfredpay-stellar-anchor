@@ -149,3 +149,5 @@ polaris_client/*
 backend/src/core/testing/*.json
 backend/src/core/testing/tests2.py
 backend/src/etc/nginx/sites-available/stellar-anchor.bkp
+backend/src/core/testing/tests Depositos y Retiros.py
+backend/src/core/testing/tests2.py
