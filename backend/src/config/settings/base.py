@@ -130,7 +130,6 @@ CORS_ORIGIN_WHITELIST = get_config_set("CORS_ALLOWED_ORIGINS")
 
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'collectstatic')
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_URL = '/static/'
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
