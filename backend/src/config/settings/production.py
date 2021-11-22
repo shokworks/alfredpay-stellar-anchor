@@ -1,0 +1,12 @@
+from .base import *
+
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = False
+
+
+DEBUG = False
+
+
+DATABASES = config["DATABASES"]

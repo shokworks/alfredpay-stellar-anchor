@@ -1,0 +1,17 @@
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User=jamartinez
+Group=www-data
+WorkingDirectory=/home/josean/Scripts/Django/stellar-anchor/backend/src
+ExecStart=/home/josean/Scripts/Django/stellar-anchor/backend/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/gunicorn.sock \
+          config.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
