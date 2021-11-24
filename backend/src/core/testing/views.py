@@ -56,7 +56,7 @@ def generate_toml(generate_toml):
         "DOCUMENTATION": {
             "ORG_NAME": "Alfred Pay",
             "ORG_DBA": "Alfred Payment Solutions",
-            "ORG_URL": "alfredpay.io",
+            "ORG_URL": "https://alfredpay.io",
             "ORG_LOGO": "https://alfred-pay.com/wp-content/themes/Alfred%20Pay%20Theme/assets/images/Logo_Alfred.svg",
             "ORG_DESCRIPTION": "Cross border remittance platform on the stellar blockchain that uses USDC as a medium of exchange.",
             "ORG_PHYSICAL_ADDRESS": "7440 N Kendall Dr unit 1806 Miami FL 33156",
@@ -67,7 +67,10 @@ def generate_toml(generate_toml):
     }
     toml_dict3 = {
         "CURRENCIES": [
-            {"code": asset.code, "issuer": asset.issuer}
+            {"code": asset.code, "issuer": asset.issuer,
+	    "status": "test", "is_asset_anchored": False,
+	    "anchor_asset_type": "fiat",
+	    "desc": "Cross border remittance anchor that uses USDC as a medium of exchange."}
             for asset in Asset.objects.all().iterator()
         ],
     }
@@ -154,11 +157,9 @@ class MySEP10Auth(SEP10Auth):
 
     @staticmethod
     def _get_client_signing_key(client_domain):
-        print(f"PASO 7 client_signing_key = self._get_client_signing_key(client_domain): True")
-        print(f"NOTA fetch_stellar_toml ESTA USANDO use_http=True PARA PRUEBAS SIN SSL")
         client_toml_contents = fetch_stellar_toml(
             client_domain,
-            use_http=True,
+            use_http=False,
             client=RequestsClient(
                 request_timeout=settings.SEP10_CLIENT_ATTRIBUTION_REQUEST_TIMEOUT
             ),
@@ -240,7 +241,6 @@ class MySEP10Auth(SEP10Auth):
 
         signers = account.load_ed25519_public_key_signers()
         threshold = account.thresholds.med_threshold
-        print(f"threshold = account.thresholds.med_threshold: {threshold}")
         try:
             signers_found = verify_challenge_transaction_threshold(
                 challenge_transaction=envelope_xdr,
@@ -258,4 +258,3 @@ class MySEP10Auth(SEP10Auth):
             f"Challenge verified using account signers: {[s.account_id for s in signers_found]}"
         )
         return client_domain, None
-
