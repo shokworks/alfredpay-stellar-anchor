@@ -8,7 +8,7 @@
 "HORIZON_URI": "http://horizon-testnet.stellar.org/",
 "HOST_URL": "http://localhost:8003",
 "LOCAL_MODE": 1,
-"ACTIVE_SEPS": ["sep-1", "sep-10", "sep-24", "sep-31"],
+"ACTIVE_SEPS": ["sep-1", "sep-6", "sep-10", "sep-12", "sep-24"],
 "Seccion Comments 3": "SEP 10 Configuration.",
 "SEP10_HOME_DOMAINS": ["localhost:8003"],
 "SEP10_JWT_KEY": "MifAeFqdjcoyS2kgznCPIYpvrwN3x96u",
@@ -16,4 +16,5 @@
 "SEP10_SERVER_SEED": "SAJOMEQEHB6QXUCT6EAZBCYBJUHV2ZY3DVKSTJ3PTDS5ZYCTOV6UO7FU",
 "SEP10_CLIENT_KEY":  "GAB5XGSIDA3VU2DUOVIWOJ5SFHZFRTSDNB5G3B5Z5IWXZWXKMVRIMSO4",
 "SEP10_CLIENT_SEED": "SASYZ3ITINMYWVYWZO4XMMWIK4NLGJGBXYXIK5B4G7TZ5WQXCDFQ7ZLU",
-"SEP10_CLIENT_A_REQ": "False"}
+"SEP10_CLIENT_A_REQ": "False",
+"Seccion Comments 4": "SEP 12 Configuration."}
