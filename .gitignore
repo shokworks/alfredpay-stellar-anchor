@@ -145,3 +145,4 @@ backend/polaris.tar
 backend/src/base-dir
 backend/src/core/testing/*.json
 backend/src/etc/*
+etc-bkp/
