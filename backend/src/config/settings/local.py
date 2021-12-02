@@ -8,7 +8,7 @@ DATABASES = config["DATABASES"]
 
 
 LOGGING = {
-    'version': 1,
+    "version": 1,
     'disable_existing_loggers': False,
     'formatters': {
         'simple': {
@@ -16,23 +16,41 @@ LOGGING = {
             'style': '{',
         },
     },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+    "loggers": {
+        "testing": {
+            "level": "DEBUG",
+            "handlers": [
+                "console", "testing_info", "testing_debug",
+            ]
+        },
+        "polaris": {
+            "level": "DEBUG",
+            "handlers": [
+                "console", "polaris",
+            ]
         }
     },
-    'loggers': {
-        'myapp': {
-            'handlers': ['console'],
-            'propogate': True,
-            'LEVEL': 'DEBUG'
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
         },
-        'polaris': {
-            'handlers': ['console'],
-            'propagate': True,
-            'LEVEL': 'INFO'
+        "polaris": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "./etc/log/polaris.log",
+            "formatter": "simple"
         },
-    }
+        "testing_info": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "./etc/log/testing_info.log",
+            "formatter": "simple"
+        },
+        "testing_debug": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "./etc/log/testing_debug.log",
+            "formatter": "simple"
+        },
+    },
 }

@@ -169,7 +169,13 @@ def read_challenge_transaction(
             "Invalid server_account_id, multiplexed account are not supported."
         )
 
-    xdr_object = stellar_xdr.TransactionEnvelope.from_xdr(challenge_transaction)
+    try:
+        xdr_object = stellar_xdr.TransactionEnvelope.from_xdr(challenge_transaction)
+    except:
+        raise InvalidSep10ChallengeError(
+            "Invalid base64-encoded string: number of data characters (21) cannot be 1 more than a multiple of 4"
+        )
+
     if xdr_object.type == stellar_xdr.EnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
         raise ValueError(
             "Invalid challenge, expected a TransactionEnvelope but received a FeeBumpTransactionEnvelope."
@@ -251,7 +257,6 @@ def read_challenge_transaction(
             if manage_data_op.data_name == f"{home_domain} auth":
                 matched_home_domain = home_domain
                 break
-    print(f"matched_home_domain: {matched_home_domain}")
 
     if matched_home_domain is None:
         raise InvalidSep10ChallengeError(
@@ -400,7 +405,6 @@ def verify_challenge_transaction_signers(
     client_signing_key_found = False
     for signer in all_signers_found:
         if signer.account_id == server_keypair.public_key:
-            print(f"VCTS 6")
             server_signer_found = True
             if len(all_signers_found) != 1:
                 continue

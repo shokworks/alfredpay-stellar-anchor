@@ -155,7 +155,6 @@ class MySEP10Auth(SEP10Auth):
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        print(f"transaction: {transaction}")
         return Response(
             {
                 "transaction": transaction,
@@ -165,8 +164,6 @@ class MySEP10Auth(SEP10Auth):
 
     @staticmethod
     def _get_client_signing_key(client_domain):
-        print(f"PASO 7 client_signing_key = self._get_client_signing_key(client_domain): True")
-        print(f"NOTA fetch_stellar_toml ESTA USANDO use_http=True PARA PRUEBAS SIN SSL")
         client_toml_contents = fetch_stellar_toml(
             client_domain,
             use_http=True,
@@ -251,7 +248,6 @@ class MySEP10Auth(SEP10Auth):
 
         signers = account.load_ed25519_public_key_signers()
         threshold = account.thresholds.med_threshold
-        print(f"threshold = account.thresholds.med_threshold: {threshold}")
         try:
             signers_found = verify_challenge_transaction_threshold(
                 challenge_transaction=envelope_xdr,

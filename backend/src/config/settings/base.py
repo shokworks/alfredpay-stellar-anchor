@@ -55,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 # Polaris Environment Variables.
@@ -69,7 +70,7 @@ POLARIS_SIGNING_KEY = get_config_set("SEP10_SERVER_KEY")
 POLARIS_SIGNING_SEED = get_config_set("SEP10_SERVER_SEED")
 POLARIS_CLIENT_KEY = get_config_set("SEP10_CLIENT_KEY")
 POLARIS_CLIENT_SEED = get_config_set("SEP10_CLIENT_SEED")
-POLARIS_SEP10_CLIENT_ATTRIBUTION_REQUIRED = get_config_set("SEP10_CLIENT_A_REQ")
+POLARIS_SEP10_CLIENT_ATTRIBUTION_REQUIRED = (get_config_set("SEP10_CLIENT_A_REQ") == True)
 
 
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
@@ -125,8 +126,10 @@ USE_L10N = True
 USE_TZ = True
 
 
-CORS_ALLOWED_ORIGINS = get_config_set("CORS_ALLOWED_ORIGINS")
-CORS_ORIGIN_WHITELIST = get_config_set("CORS_ALLOWED_ORIGINS")
+# CORS_ALLOWED_ORIGINS = get_config_set("CORS_ALLOWED_ORIGINS")
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = False
+# CORS_ORIGIN_WHITELIST = get_config_set("CORS_ALLOWED_ORIGINS")
 
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'collectstatic')
