@@ -10,7 +10,6 @@ DEBUG = False
 
 
 DATABASES = config["DATABASES"]
-<<<<<<< HEAD
 
 
 LOGGING = {
@@ -60,5 +59,3 @@ LOGGING = {
         },
     },
 }
-=======
->>>>>>> 6d01b5c91b52143831b09596c6d4b63141490247
