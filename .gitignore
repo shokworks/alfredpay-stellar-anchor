@@ -145,6 +145,3 @@ backend/polaris.tar
 backend/src/base-dir
 backend/src/core/testing/*.json
 backend/src/etc/*
-backend-bkp
-backend/src/etc/config.json
-backend/src/etc/systemd/system/gunicorn.service
