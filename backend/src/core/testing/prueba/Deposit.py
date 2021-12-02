@@ -28,9 +28,7 @@ deposito1 = get_transaction_interactive(
     token=server_token, account=server_public_key,
     asset_code="TEST", asset_issuer=None, url=server_url, operation="deposit",)
 print(deposito1)
-"""
 deposito2 = deposito1.split("webapp")[1]
 url_nueva = f"https://stellar-tesnet.alfred-pay.com/sep24/transactions/deposit/webapp{deposito2}"
 print(url_nueva)
 print(requests.get(url_nueva))
-"""
