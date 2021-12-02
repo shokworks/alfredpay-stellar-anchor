@@ -1,10 +1,15 @@
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
+	listen 80 default_server;
+	listen [::]:80 default_server;
 
-    server_name stellar-tesnet.alfred-pay.com;
+	server_name stellar-tesnet.alfred-pay.com;
+        client_max_body_size 8M;
 
-    location / {
-        proxy_pass http://unix:/run/gunicorn.sock;
-    }
+        error_log  /var/log/nginx/anchor-tests/error.log;
+        access_log /var/log/nginx/anchor-tests/access_log;
+
+	location / {
+		proxy_pass http://unix:/run/gunicorn.sock;
+		proxy_set_header Host $host;
+	}
 }
