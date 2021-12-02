@@ -148,3 +148,5 @@ polaris_app/
 polaris_client/
 backend/src/core/testing/*.json
 backend/src/core/testing/tests2.py
+backend/src/core/testing/views-bkp.py
+backend/src/etc/nginx/sites-available/stellar-anchor.bkp
