@@ -27,7 +27,55 @@ GRANT ALL PRIVILEGES ON ${database}.* TO '${username}'@'localhost';
 FLUSH PRIVILEGES;
 exit
 ```
-> Note: Be sure to swap out  `${database}`, `${username}` and `${password}` with the actual values of your configuration.
+> Note: Be sure to swap out `${database}`, `${username}` and `${password}` with the actual values of your configuration.
+
+### Cloning the repository.
+_To run this anchor server using your own stellar accounts, follow the instructions below._
+
+- First, clone the repository:
+```sh
+git clone git@github.com:shokworks/alfredpay-stellar-anchor.git
+cd ${WorkingFolder}
+```
+> Note: Be sure to swap out `${WorkingFolder}` with the actual values of your configuration.
+
+- Then Install the virtualenv: Virtualenv is another key Python tool. It enables you to create a series of controlled environments where you can install and experiment with Python modules without upsetting any previously installed software. In the project folder type the folling command.
+```sh
+python3 -m pip install virtualenv
+```
+- Creating and activating a virtual environment.
+```sh
+python3 -m virtualenv ${WorkingFolder}/venv
+source ${WorkingFolder}/venv/bin/activate
+python -m pip install -r ${WorkingFolder}/backend/requirements.txt
+```
+
+- Then, add a config.json file containing the necessary environment variables in the folder ${WorkingFolder}/backend/src/etc/
+
+> {"Seccion Comments 1": "Django Secrets Env Values.",
+> "SECRET_KEY": "`${Django Secret Key}`",
+> "ALLOWED_HOSTS": ["127.0.0.1", "localhost", "`${Domain Name}`"],
+> "DATABASES": {"default": {"ENGINE": "django.db.backends.mysql", "NAME": "`${database}`", "USER": "`${username}`", "PASSWORD": "`${password}`", "HOST": "127.0.0.1", "PORT": ""}},
+> "CORS_ALLOWED_ORIGINS": ["https://127.0.0.1", "https://localhost"],
+> "Seccion Comments 2": "Polaris Secrets Env Values.",
+> "STELLAR_NETWORK_PASSPHRASE": "Test SDF Network ; September 2015",
+> "HORIZON_URI": "https://horizon-testnet.stellar.org/",
+> "HOST_URL": "`${Domain Name}`",
+> "LOCAL_MODE": 0,
+> "ACTIVE_SEPS": ["sep-1", "sep-10", "sep-24"],
+> "Seccion Comments 3": "SEP 10 Configuration.",
+> "SEP10_HOME_DOMAINS": ["`${Domain Name}`"],
+> "SEP10_JWT_KEY": "`${JWT Secret Key}`",
+> "SEP10_SERVER_KEY":  "`${First Stellar Account}`",
+> "SEP10_SERVER_SEED": "`${First Signing Account Seed}`",
+> "SEP10_CLIENT_KEY":  "`${Second Stellar Account}`",
+> "SEP10_CLIENT_SEED": "`${Second Signing Account Seed}`",
+> "SEP10_CLIENT_A_REQ": "False"}
+
+- You can make yours accounts with the folling link in the [Stellar Laboratory].
+> Note: If you want to change the `config.json` file or the `settings.py` of the project, you can follow the documentation of the Polaris proyect in the [Polaris Tutorial].
+
+
 
 [Ubuntu]: <https://ubuntu.com/server/docs>
 [MariaDB]: https://mariadb.com/kb/en/documentation/
@@ -36,3 +84,5 @@ exit
 [Django]: https://docs.djangoproject.com/en/3.2/
 [Polaris]: https://django-polaris.readthedocs.io/
 [Gunicorn]: https://docs.gunicorn.org/en/stable/index.html
+[Stellar Laboratory]: https://laboratory.stellar.org/#account-creator?network=test
+[Polaris Tutorial]: https://django-polaris.readthedocs.io/en/stable/tutorials/index.html
