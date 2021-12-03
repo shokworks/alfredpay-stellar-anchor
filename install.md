@@ -52,25 +52,27 @@ python -m pip install -r ${WorkingFolder}/backend/requirements.txt
 
 - Then, add a config.json file containing the necessary environment variables in the folder ${WorkingFolder}/backend/src/etc/
 
-> {"Seccion Comments 1": "Django Secrets Env Values.",
-> "SECRET_KEY": "`${Django Secret Key}`",
-> "ALLOWED_HOSTS": ["127.0.0.1", "localhost", "`${Domain Name}`"],
-> "DATABASES": {"default": {"ENGINE": "django.db.backends.mysql", "NAME": "`${database}`", "USER": "`${username}`", "PASSWORD": "`${password}`", "HOST": "127.0.0.1", "PORT": ""}},
-> "CORS_ALLOWED_ORIGINS": ["https://127.0.0.1", "https://localhost"],
-> "Seccion Comments 2": "Polaris Secrets Env Values.",
-> "STELLAR_NETWORK_PASSPHRASE": "Test SDF Network ; September 2015",
-> "HORIZON_URI": "https://horizon-testnet.stellar.org/",
-> "HOST_URL": "`${Domain Name}`",
-> "LOCAL_MODE": 0,
-> "ACTIVE_SEPS": ["sep-1", "sep-10", "sep-24"],
-> "Seccion Comments 3": "SEP 10 Configuration.",
-> "SEP10_HOME_DOMAINS": ["`${Domain Name}`"],
-> "SEP10_JWT_KEY": "`${JWT Secret Key}`",
-> "SEP10_SERVER_KEY":  "`${First Stellar Account}`",
-> "SEP10_SERVER_SEED": "`${First Signing Account Seed}`",
-> "SEP10_CLIENT_KEY":  "`${Second Stellar Account}`",
-> "SEP10_CLIENT_SEED": "`${Second Signing Account Seed}`",
-> "SEP10_CLIENT_A_REQ": "False"}
+```sh
+{"Seccion Comments 1": "Django Secrets Env Values.",
+"SECRET_KEY": "`${Django Secret Key}`",
+"ALLOWED_HOSTS": ["127.0.0.1", "localhost", "`${Domain Name}`"],
+"DATABASES": {"default": {"ENGINE": "django.db.backends.mysql", "NAME": "`${database}`", "USER": "`${username}`", "PASSWORD": "`${password}`", "HOST": "127.0.0.1", "PORT": ""}},
+"CORS_ALLOWED_ORIGINS": ["https://127.0.0.1", "https://localhost"],
+"Seccion Comments 2": "Polaris Secrets Env Values.",
+"STELLAR_NETWORK_PASSPHRASE": "Test SDF Network ; September 2015",
+"HORIZON_URI": "https://horizon-testnet.stellar.org/",
+"HOST_URL": "`${Domain Name}`",
+"LOCAL_MODE": 0,
+"ACTIVE_SEPS": ["sep-1", "sep-10", "sep-24"],
+"Seccion Comments 3": "SEP 10 Configuration.",
+"SEP10_HOME_DOMAINS": ["`${Domain Name}`"],
+"SEP10_JWT_KEY": "`${JWT Secret Key}`",
+"SEP10_SERVER_KEY":  "`${First Stellar Account}`",
+"SEP10_SERVER_SEED": "`${First Signing Account Seed}`",
+"SEP10_CLIENT_KEY":  "`${Second Stellar Account}`",
+"SEP10_CLIENT_SEED": "`${Second Signing Account Seed}`",
+"SEP10_CLIENT_A_REQ": "False"}
+```
 
 - You can make yours accounts with the folling link in the [Stellar Laboratory].
 > Note: If you want to change the `config.json` file or the `settings.py` of the project, you can follow the documentation of the Polaris proyect in the [Polaris Tutorial].
