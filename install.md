@@ -77,7 +77,24 @@ python -m pip install -r ${WorkingFolder}/backend/requirements.txt
 - You can make yours accounts with the folling link in the [Stellar Laboratory].
 > Note: If you want to change the `config.json` file or the `settings.py` of the project, you can follow the documentation of the Polaris proyect in the [Polaris Tutorial].
 
+### Testing Gunicorn’s Ability to Serve the Project
 
+The last thing we want to do before leaving our virtual environment is test Gunicorn to make sure that it can serve the application.
+
+```sh
+cd ${WorkingFolder}/backend/src
+gunicorn --bind 0.0.0.0:8000 ${project}.wsgi
+```
+
+> Note: `${project}` is in the same folder as `manage.py` in most of the configurations.
+
+When you are finished testing, hit CTRL-C in the terminal window to stop Gunicorn. We’re now finished configuring our Django application. We can back out of our virtual environment by typing:
+
+```sh
+deactivate
+```
+
+Now we can create a Gunicorn systemd Service File, and configure Nginx to Proxy Pass to Gunicorn. Both configurations are outside the scope of this file for more documentation see, [Nginx] and [Gunicorn].
 
 [Ubuntu]: <https://ubuntu.com/server/docs>
 [MariaDB]: https://mariadb.com/kb/en/documentation/
