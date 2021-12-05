@@ -76,7 +76,7 @@ python -m pip install -r ${WorkingFolder}/backend/requirements.txt
 ```
 
 - You can make yours accounts with the folling link in the [Stellar Laboratory].
-> Note: If you want to change the `config.json` file or the `settings.py` of the project, you can follow the documentation of the Polaris proyect in the [Polaris Tutorial].
+> Note: If you want to change the `config.json` file or the `settings.py` of the project, you can follow the documentation of the Polaris project in the [Polaris Tutorial].
 
 ### Testing Gunicorn’s Ability to Serve the Project
 
