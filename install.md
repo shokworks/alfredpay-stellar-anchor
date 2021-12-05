@@ -10,8 +10,8 @@ _Polaris is an extendable django app for Stellar Ecosystem Proposal (SEP) implem
 ## Installing a Polaris app of Django with a LEMP (Linux, Nginx, MariaDB y Python) Server.
 
 ### General Documentation:
--- The **LEMP** software stack is a group of software that can be used to serve dynamic web pages and web applications. This is an acronym that describes a **L**inux operating system like [Ubuntu], with an [Nginx] (pronounced like “**E**ngine-X”) web server, a backend data is stored with **M**ySQL like database [MariaDB] and the dynamic processing is handled by **P**ython.
--- These instructions assume you have already set up a django project. If you haven't, take a look at the [Python-PIP], [Django], [Polaris] and [Gunicorn] Documentation for more details.
+- The **LEMP** software stack is a group of software that can be used to serve dynamic web pages and web applications. This is an acronym that describes a **L**inux operating system like [Ubuntu], with an [Nginx] (pronounced like “**E**ngine-X”) web server, a backend data is stored with **M**ySQL like database [MariaDB] and the dynamic processing is handled by **P**ython.
+- These instructions assume you have already set up a django project. If you haven't, take a look at the [Python-PIP], [Django], [Polaris] and [Gunicorn] Documentation for more details.
 
 ### Installation of the packages and his dependencies.
 - The project requires _MariaDB_ Server and Client to run, _Nginx_ and _Python3_ with his _pip_ package.
