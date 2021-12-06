@@ -149,7 +149,7 @@ backend/src/core/testing/*.json
 backend/src/core/testing/tests2.py
 backend/src/core/testing/views-bkp.py
 backend/src/etc/*
-etc-bkp/
+etc-bkp*
 polaris_app/
 polaris_client/
 prueba*
