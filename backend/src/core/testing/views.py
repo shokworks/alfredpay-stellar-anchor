@@ -45,10 +45,6 @@ def generate_toml(generate_toml):
     }
     toml_dict2 = {
         "NETWORK_PASSPHRASE": settings.STELLAR_NETWORK_PASSPHRASE,
-        "WEB_AUTH_ENDPOINT": os.path.join(settings.HOST_URL, "auth"),
-        "SIGNING_KEY": settings.SIGNING_KEY,
-        "TRANSFER_SERVER": os.path.join(settings.HOST_URL, "sep24"),
-        "TRANSFER_SERVER_SEP0024": os.path.join(settings.HOST_URL, "sep24"),
         "ACCOUNTS": [
             asset.distribution_account
             for asset in Asset.objects.exclude(distribution_seed__isnull=True)
@@ -76,6 +72,19 @@ def generate_toml(generate_toml):
             "github": "crypto_soporte",
         },
     }
+    if "sep-24" in settings.ACTIVE_SEPS:
+        toml_dict2["TRANSFER_SERVER"] = os.path.join(settings.HOST_URL, "sep24")
+        toml_dict2["TRANSFER_SERVER_SEP0024"] = toml_dict2["TRANSFER_SERVER"]
+    if "sep-6" in settings.ACTIVE_SEPS:
+        toml_dict2["TRANSFER_SERVER"] = os.path.join(settings.HOST_URL, "sep6")
+    if "sep-10" in settings.ACTIVE_SEPS:
+        toml_dict2["WEB_AUTH_ENDPOINT"] = os.path.join(settings.HOST_URL, "auth")
+        toml_dict2["SIGNING_KEY"] = settings.SIGNING_KEY
+    if "sep-12" in settings.ACTIVE_SEPS:
+        toml_dict2["KYC_SERVER"] = os.path.join(settings.HOST_URL, "kyc")
+    if "sep-31" in settings.ACTIVE_SEPS:
+        toml_dict2["DIRECT_PAYMENT_SERVER"] = os.path.join(settings.HOST_URL, "sep31")
+
     toml_dict3 = {
         "CURRENCIES": [
             {"code": asset.code, "issuer": asset.issuer}

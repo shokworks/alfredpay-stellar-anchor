@@ -42,6 +42,8 @@ logger = getLogger(__name__)
 @validate_sep10_token()
 def deposit(token: SEP10Token, request: Request) -> Response:
     args = parse_request_args(request)
+    print(f"parse_request_args(request): {args}")
+    print(f"request: {Request.__dict__}")
     if "error" in args:
         return args["error"]
 
