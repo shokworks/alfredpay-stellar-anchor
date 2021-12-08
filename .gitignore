@@ -140,7 +140,8 @@ cython_debug/
 
 # Archivos del projecto.
 django-polaris/
-backend/Documentacion/
+Documentacion/
+Documentation/
 backend/polaris.tar
 backend/src/base-dir
 backend/src/core/polaris
