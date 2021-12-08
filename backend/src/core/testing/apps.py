@@ -9,9 +9,9 @@ class TestingConfig(AppConfig):
 def ready(self):
     from polaris.integrations import register_integrations
     from myintegrations import (
-        # MyRailsIntegration,
-        # MyDepositIntegration,
-        # MyWithdrawalIntegration,
+        MyRailsIntegration,
+        MyDepositIntegration,
+        MyWithdrawalIntegration,
         # MyCustomerIntegration,
         # toml_integration,
         # fee_integrations,
@@ -20,8 +20,8 @@ def ready(self):
     )
 
     register_integrations(
-        # deposit=MyDepositIntegration(),
-        # withdrawal=MyWithdrawalIntegration(),
+        deposit=MyDepositIntegration(),
+        withdrawal=MyWithdrawalIntegration(),
         # customer=MyCustomerIntegration(),
         # toml=toml_integration,
         sep6_info=info_integration,

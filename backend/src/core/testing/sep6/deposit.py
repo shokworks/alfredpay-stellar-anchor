@@ -25,12 +25,15 @@ from polaris.utils import (
 )
 from polaris.shared.endpoints import SEP6_MORE_INFO_PATH
 from polaris.sep6.utils import validate_403_response
-from polaris.sep10.utils import validate_sep10_token
-from polaris.sep10.token import SEP10Token
+from ..sep10.utils import validate_sep10_token
+from ..sep10.token import SEP10Token
 from polaris.integrations import (
     registered_deposit_integration as rdi,
     registered_fee_func,
     calculate_fee,
+)
+from ..myintegrations.transactions import (
+    registered_deposit_integration as rdi2,
 )
 
 logger = getLogger(__name__)
@@ -42,8 +45,6 @@ logger = getLogger(__name__)
 @validate_sep10_token()
 def deposit(token: SEP10Token, request: Request) -> Response:
     args = parse_request_args(request)
-    print(f"parse_request_args(request): {args}")
-    print(f"request: {Request.__dict__}")
     if "error" in args:
         return args["error"]
 
@@ -69,12 +70,15 @@ def deposit(token: SEP10Token, request: Request) -> Response:
     )
 
     try:
-        integration_response = rdi.process_sep6_request(
+        print(f"deposit 005 try")
+        integration_response = rdi2.process_sep6_request(
             token=token, request=request, params=args, transaction=transaction
         )
     except ValueError as e:
+        print(f"deposit 006 error")
         return render_error_response(str(e))
     except APIException as e:
+        print(f"deposit 007 error")
         return render_error_response(str(e), status_code=e.status_code)
 
     try:
