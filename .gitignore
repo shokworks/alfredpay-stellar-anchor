@@ -144,7 +144,7 @@ Documentacion/
 Documentation/
 backend/polaris.tar
 backend/src/base-dir
-backend/src/core/polaris
+# backend/src/core/polaris
 backend/src/core/test.py
 backend/src/core/testing/*.json
 backend/src/core/testing/tests2.py
