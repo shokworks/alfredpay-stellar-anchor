@@ -26,7 +26,7 @@ from stellar_sdk.exceptions import SdkError
 from stellar_sdk.keypair import Keypair
 from stellar_sdk.transaction_envelope import TransactionEnvelope
 
-from polaris import settings
+from core.polaris import settings
 
 # Used for loading the distribution signers data onto an Asset obj
 ASSET_DISTRIBUTION_ACCOUNT_MAP = {}
@@ -95,7 +95,7 @@ class EncryptedTextField(models.TextField):
 
 
 class Asset(TimeStampedModel):
-    code = models.TextField()
+    code = models.CharField(max_length=255)
     """The asset code as defined on the Stellar network."""
 
     issuer = models.TextField(validators=[MinLengthValidator(56)])
@@ -716,7 +716,7 @@ class Quote(models.Model):
     The unique ID for the quote.
     """
 
-    stellar_account = models.TextField()
+    stellar_account = models.CharField(max_length=255)
     """
     The Stellar (G...) account authenticated via SEP-10 when this Quote was created.
     Note that if ``Quote.muxed_account`` is not null, this column's value is 
@@ -742,25 +742,25 @@ class Quote(models.Model):
     Choices for type.
     """
 
-    type = models.TextField(choices=TYPE)
+    type = models.CharField(max_length=80, choices=TYPE)
     """
     The type of quote. Firm quotes have a non-null price and expiration, indicative quotes 
     may have a null price and expiration.
     """
 
-    sell_asset = models.TextField()
+    sell_asset = models.CharField(max_length=255)
     """
     The asset the client would like to sell. Ex. USDC:G..., iso4217:ARS
     """
 
-    buy_asset = models.TextField()
+    buy_asset = models.CharField(max_length=255)
     """
     The asset the client would like to receive for some amount of sell_asset.
     """
 
     sell_amount = models.DecimalField(max_digits=30, decimal_places=7)
     """
-    The amount of sell_asset the client would exchange for buy_asset.
+    The amount of sell_asset the client would exchange for |.
     """
 
     buy_amount = models.DecimalField(
@@ -816,12 +816,12 @@ class Quote(models.Model):
 
 
 class OffChainAsset(models.Model):
-    scheme = models.TextField()
+    scheme = models.CharField(max_length=255)
     """
     The scheme of the off-chain asset as defined by SEP-38's Asset Identification Format.
     """
 
-    identifier = models.TextField()
+    identifier = models.CharField(max_length=255)
     """
     The identifier of the off-chain asset as defined by SEP-38's Asset Identification Format.
     """
@@ -867,18 +867,18 @@ class DeliveryMethod(models.Model):
     The types of delivery methods.
     """
 
-    type = models.TextField(choices=TYPE)
+    type = models.CharField(max_length=80, choices=TYPE)
     """
     The type of delivery method. Sell methods describe how a client can deliver funds to the 
     anchor. Buy methods describe how a client can receive or collect funds from the anchor.
     """
 
-    name = models.TextField()
+    name = models.CharField(max_length=255)
     """
     The name of the delivery method, to be used in SEP-38 request and response bodies.
     """
 
-    description = models.TextField()
+    description = models.CharField(max_length=255)
     """
     The human-readable description of the deliver method, to be used in SEP-38 
     response bodies.
@@ -895,13 +895,13 @@ class DeliveryMethod(models.Model):
 
 
 class ExchangePair(models.Model):
-    buy_asset = models.TextField()
+    buy_asset = models.CharField(max_length=255)
     """
     The asset the client can purchase with sell_asset using SEP-38's Asset 
     Identification Format.
     """
 
-    sell_asset = models.TextField()
+    sell_asset = models.CharField(max_length=255)
     """
     The asset the client can provide in exchange for buy_asset using SEP-38's
     Asset Identification Format.
