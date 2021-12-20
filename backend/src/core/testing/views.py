@@ -11,12 +11,12 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 
-from polaris import settings
-from polaris.integrations import registered_toml_func
-from polaris.models import Asset
-from polaris.utils import getLogger, render_error_response
-from polaris.sep1.views import PolarisPlainTextRenderer, generate_toml
-from polaris.sep10.views import SEP10Auth
+from core.polaris import settings
+from core.polaris.integrations import registered_toml_func
+from core.polaris.models import Asset
+from core.polaris.utils import getLogger, render_error_response
+from core.polaris.sep1.views import PolarisPlainTextRenderer, generate_toml
+from core.polaris.sep10.views import SEP10Auth
 
 from stellar_sdk import Keypair
 from stellar_sdk.client.requests_client import RequestsClient
