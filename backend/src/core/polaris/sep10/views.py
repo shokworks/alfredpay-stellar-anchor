@@ -19,7 +19,8 @@ from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from stellar_sdk.operation import ManageData
 from stellar_sdk.sep.stellar_toml import fetch_stellar_toml
-from stellar_sdk.sep.stellar_web_authentication import (
+# from stellar_sdk.sep.stellar_web_authentication import (
+from core.testing.stellar_web_authentication import (
     build_challenge_transaction,
     read_challenge_transaction,
     verify_challenge_transaction_threshold,
