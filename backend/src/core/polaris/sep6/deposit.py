@@ -35,9 +35,13 @@ from core.polaris.sep6.utils import validate_403_response
 from core.polaris.sep10.utils import validate_sep10_token
 from core.polaris.sep10.token import SEP10Token
 from core.polaris.integrations import (
-    registered_deposit_integration as rdi,
+    # registered_deposit_integration as rdi,
     registered_fee_func,
     calculate_fee,
+)
+
+from core.testing.myintegrations.transactions import (
+    registered_deposit_integration as rdi2,
 )
 
 logger = getLogger(__name__)
@@ -89,12 +93,15 @@ def deposit_logic(token: SEP10Token, request: Request, exchange: bool) -> Respon
     )
 
     try:
-        integration_response = rdi.process_sep6_request(
+        print(f"deposit 005 try")
+        integration_response = rdi2.process_sep6_request(
             token=token, request=request, params=args, transaction=transaction
         )
     except ValueError as e:
+        print(f"deposit 006 Error")
         return render_error_response(str(e))
     except APIException as e:
+        print(f"deposit 007 Error")
         return render_error_response(str(e), status_code=e.status_code)
 
     try:
