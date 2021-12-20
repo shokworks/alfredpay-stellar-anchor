@@ -6,8 +6,7 @@ from .views import generate_toml, MySEP10Auth
 urlpatterns = [
     path(".well-known/stellar.toml", generate_toml),
     path("auth2", MySEP10Auth.as_view()),
-    # path("auth", include("polaris.sep10.urls")),
-    # path("sep24/", include("polaris.sep24.urls")),
-    # path("sep24/", include(sep24_urls)),
-    # path("sep6/", include(sep6_urls)),
+    path("sep6/", include("core.polaris.sep6.urls")),
+    path("auth", include("core.polaris.sep10.urls")),
+    path("sep24/", include("core.polaris.sep24.urls")),
 ]

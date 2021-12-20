@@ -13,9 +13,10 @@ from core.polaris.utils import render_error_response
 from core.polaris.integrations import (
     registered_fee_func,
     calculate_fee,
-    registered_info_func,
+    # registered_info_func,
 )
 
+from core.testing.myintegrations.info_integration import registered_info_func
 
 logger = getLogger(__name__)
 

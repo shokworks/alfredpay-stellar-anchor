@@ -2,7 +2,7 @@ rails
 from typing import List, Dict
 from django.db.models import QuerySet
 
-from polaris.models import Transaction
+from core.polaris.models import Transaction
 
 
 class MyRailsIntegration:

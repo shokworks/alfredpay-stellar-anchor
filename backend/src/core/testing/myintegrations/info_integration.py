@@ -1,6 +1,6 @@
 from typing import Dict, Optional, List
 from rest_framework.request import Request
-from polaris.models import Asset
+from core.polaris.models import Asset
 
 
 def default_info_func(
