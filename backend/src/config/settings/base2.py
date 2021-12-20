@@ -44,7 +44,6 @@ LOCAL_APPS = [
 THIRD_APPS = [
     'corsheaders',
     'rest_framework',
-    # 'polaris',
 ]
 
 INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
