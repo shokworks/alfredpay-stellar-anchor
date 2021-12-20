@@ -9,10 +9,10 @@ from decimal import Decimal
 
 from stellar_sdk import Keypair
 
-from polaris.sep38.quote import validate_quote_provided
-from polaris.tests.helpers import mock_check_auth_success
-from polaris.models import DeliveryMethod, Asset, OffChainAsset, ExchangePair, Quote
-from polaris.settings import DATETIME_FORMAT
+from core.polaris.sep38.quote import validate_quote_provided
+from core.polaris.tests.helpers import mock_check_auth_success
+from core.polaris.models import DeliveryMethod, Asset, OffChainAsset, ExchangePair, Quote
+from core.polaris.settings import DATETIME_FORMAT
 
 
 ENDPOINT = "/sep38/quote"

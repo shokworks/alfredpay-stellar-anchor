@@ -2,7 +2,7 @@ from typing import Optional, List, Dict
 
 from rest_framework.request import Request
 
-from polaris.sep10.token import SEP10Token
+from core.polaris.sep10.token import SEP10Token
 
 
 class CustomerIntegration:

@@ -5,8 +5,8 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 
-from polaris.models import Asset
-from polaris.integrations import (
+from core.polaris.models import Asset
+from core.polaris.integrations import (
     registered_fee_func,
     calculate_fee,
 )

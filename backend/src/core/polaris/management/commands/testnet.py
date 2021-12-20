@@ -13,8 +13,8 @@ from stellar_sdk.exceptions import (
     Ed25519SecretSeedInvalidError,
 )
 
-from polaris import settings
-from polaris.models import Transaction, Asset
+from core.polaris import settings
+from core.polaris.models import Transaction, Asset
 
 logger = getLogger(__name__)
 

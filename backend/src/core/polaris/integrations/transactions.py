@@ -5,10 +5,10 @@ from django import forms
 from django.http import QueryDict
 from rest_framework.request import Request
 
-from polaris.models import Transaction, Asset
-from polaris.integrations.forms import TransactionForm
-from polaris.templates import Template
-from polaris.sep10.token import SEP10Token
+from core.polaris.models import Transaction, Asset
+from core.polaris.integrations.forms import TransactionForm
+from core.polaris.templates import Template
+from core.polaris.sep10.token import SEP10Token
 
 
 class DepositIntegration:

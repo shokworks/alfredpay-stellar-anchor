@@ -20,11 +20,11 @@ from stellar_sdk import Memo
 from requests import Response as RequestsResponse, RequestException, post
 from aiohttp import ClientResponse
 
-from polaris import settings
-from polaris.models import Transaction, Asset, Quote, OffChainAsset, ExchangePair
-from polaris.sep10.token import SEP10Token
-from polaris.sep38.utils import asset_id_to_kwargs
-from polaris.shared.serializers import TransactionSerializer
+from core.polaris import settings
+from core.polaris.models import Transaction, Asset, Quote, OffChainAsset, ExchangePair
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.sep38.utils import asset_id_to_kwargs
+from core.polaris.shared.serializers import TransactionSerializer
 
 
 class PolarisLoggerAdapter(LoggerAdapter):

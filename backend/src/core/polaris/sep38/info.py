@@ -3,8 +3,8 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from polaris.sep38.serializers import OffChainAssetSerializer
-from polaris.models import Asset, OffChainAsset
+from core.polaris.sep38.serializers import OffChainAssetSerializer
+from core.polaris.models import Asset, OffChainAsset
 
 
 @api_view(["GET"])

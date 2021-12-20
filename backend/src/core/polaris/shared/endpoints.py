@@ -7,18 +7,18 @@ from rest_framework.response import Response
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.utils.translation import gettext as _
 
-from polaris import settings as polaris_settings
-from polaris.templates import Template
-from polaris.utils import render_error_response, getLogger
-from polaris.models import Transaction, Asset, OffChainAsset
-from polaris.integrations import registered_fee_func
-from polaris.sep24.utils import verify_valid_asset_operation
-from polaris.shared.serializers import TransactionSerializer
-from polaris.integrations import (
+from core.polaris import settings as polaris_settings
+from core.polaris.templates import Template
+from core.polaris.utils import render_error_response, getLogger
+from core.polaris.models import Transaction, Asset, OffChainAsset
+from core.polaris.integrations import registered_fee_func
+from core.polaris.sep24.utils import verify_valid_asset_operation
+from core.polaris.shared.serializers import TransactionSerializer
+from core.polaris.integrations import (
     registered_deposit_integration as rdi,
     registered_withdrawal_integration as rwi,
 )
-from polaris.sep10.utils import SEP10Token
+from core.polaris.sep10.utils import SEP10Token
 
 
 logger = getLogger(__name__)

@@ -4,7 +4,7 @@ from django.utils.translation import gettext
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-from polaris.models import OffChainAsset, Asset, ExchangePair, DeliveryMethod
+from core.polaris.models import OffChainAsset, Asset, ExchangePair, DeliveryMethod
 
 
 def asset_id_to_kwargs(asset_id: str) -> dict:

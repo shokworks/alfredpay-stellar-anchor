@@ -7,10 +7,10 @@ from unittest.mock import patch, Mock
 import pytest
 from stellar_sdk import Keypair, MuxedAccount
 
-from polaris import settings
-from polaris.models import Transaction, Asset
-from polaris.integrations import TransactionForm
-from polaris.tests.helpers import (
+from core.polaris import settings
+from core.polaris.models import Transaction, Asset
+from core.polaris.integrations import TransactionForm
+from core.polaris.tests.helpers import (
     mock_check_auth_success,
     mock_check_auth_success_client_domain,
     mock_check_auth_success_muxed_account,

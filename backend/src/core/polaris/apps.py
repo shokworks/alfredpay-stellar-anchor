@@ -12,9 +12,9 @@ class PolarisConfig(AppConfig):
         """
         Initialize the app
         """
-        from polaris import settings  # loads internal settings
-        from polaris import cors  # loads CORS signals
-        from polaris.sep24.utils import check_sep24_config
+        from core.polaris import settings  # loads internal settings
+        from core.polaris import cors  # loads CORS signals
+        from core.polaris.sep24.utils import check_sep24_config
 
         self.check_middleware()
         self.check_protocol()
@@ -34,8 +34,8 @@ class PolarisConfig(AppConfig):
 
     @staticmethod
     def check_protocol():
-        from polaris import settings
-        from polaris.utils import getLogger
+        from core.polaris import settings
+        from core.polaris.utils import getLogger
         from django.conf import settings as django_settings
 
         logger = getLogger(__name__)

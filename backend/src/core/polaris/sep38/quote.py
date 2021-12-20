@@ -11,19 +11,19 @@ from rest_framework.decorators import parser_classes, renderer_classes, api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from polaris.models import Quote, Asset, OffChainAsset, DeliveryMethod
-from polaris.integrations import registered_quote_integration as rqi
-from polaris.sep10.token import SEP10Token
-from polaris.sep10.utils import validate_sep10_token
-from polaris.utils import render_error_response
-from polaris.sep38.serializers import QuoteSerializer
-from polaris.sep38.utils import (
+from core.polaris.models import Quote, Asset, OffChainAsset, DeliveryMethod
+from core.polaris.integrations import registered_quote_integration as rqi
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.sep10.utils import validate_sep10_token
+from core.polaris.utils import render_error_response
+from core.polaris.sep38.serializers import QuoteSerializer
+from core.polaris.sep38.utils import (
     get_buy_asset,
     get_sell_asset,
     find_delivery_method,
 )
-from polaris.utils import getLogger
-from polaris.settings import DATETIME_FORMAT
+from core.polaris.utils import getLogger
+from core.polaris.settings import DATETIME_FORMAT
 
 
 logger = getLogger(__name__)

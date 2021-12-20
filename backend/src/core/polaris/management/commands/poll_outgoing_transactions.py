@@ -5,9 +5,9 @@ from datetime import datetime, timezone
 
 from django.core.management import BaseCommand
 
-from polaris.utils import getLogger, maybe_make_callback
-from polaris.models import Transaction
-from polaris.integrations import registered_rails_integration as rri
+from core.polaris.utils import getLogger, maybe_make_callback
+from core.polaris.models import Transaction
+from core.polaris.integrations import registered_rails_integration as rri
 
 
 logger = getLogger(__name__)

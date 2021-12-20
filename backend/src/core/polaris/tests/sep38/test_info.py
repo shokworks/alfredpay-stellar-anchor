@@ -2,7 +2,7 @@ import pytest
 
 from stellar_sdk import Keypair
 
-from polaris.models import Asset, OffChainAsset, DeliveryMethod
+from core.polaris.models import Asset, OffChainAsset, DeliveryMethod
 
 ENDPOINT = "/sep38/info"
 

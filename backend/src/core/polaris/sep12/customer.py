@@ -10,18 +10,18 @@ from rest_framework.decorators import api_view, renderer_classes, parser_classes
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 
-from polaris import settings
-from polaris.models import Transaction
-from polaris.utils import (
+from core.polaris import settings
+from core.polaris.models import Transaction
+from core.polaris.utils import (
     extract_sep9_fields,
     render_error_response,
     make_memo,
     getLogger,
     SEP_9_FIELDS,
 )
-from polaris.sep10.utils import validate_sep10_token
-from polaris.sep10.token import SEP10Token
-from polaris.integrations import registered_customer_integration as rci
+from core.polaris.sep10.utils import validate_sep10_token
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.integrations import registered_customer_integration as rci
 
 
 logger = getLogger(__name__)

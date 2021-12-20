@@ -2,12 +2,12 @@ from typing import Dict
 
 from rest_framework.request import Request
 
-from polaris.utils import getLogger
-from polaris.utils import SEP_9_FIELDS
-from polaris.integrations import registered_customer_integration as rci
-from polaris.models import Transaction
-from polaris.sep10.token import SEP10Token
-from polaris import settings
+from core.polaris.utils import getLogger
+from core.polaris.utils import SEP_9_FIELDS
+from core.polaris.integrations import registered_customer_integration as rci
+from core.polaris.models import Transaction
+from core.polaris.sep10.token import SEP10Token
+from core.polaris import settings
 
 
 logger = getLogger(__name__)

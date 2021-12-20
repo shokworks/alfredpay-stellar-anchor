@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 
-from polaris.shared import endpoints
+from core.polaris.shared import endpoints
 
 
 @api_view(["GET"])

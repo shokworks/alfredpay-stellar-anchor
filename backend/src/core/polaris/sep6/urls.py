@@ -1,7 +1,7 @@
 from django.urls import path
 
-from polaris import settings
-from polaris.sep6 import info, deposit, withdraw, fee, transaction
+from core.polaris import settings
+from core.polaris.sep6 import info, deposit, withdraw, fee, transaction
 
 urlpatterns = [
     path("deposit", deposit.deposit),

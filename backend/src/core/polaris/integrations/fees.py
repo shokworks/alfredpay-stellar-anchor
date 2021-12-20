@@ -3,8 +3,8 @@ from decimal import Decimal
 
 from rest_framework.request import Request
 
-from polaris import settings
-from polaris.models import Asset
+from core.polaris import settings
+from core.polaris.models import Asset
 
 
 def calculate_fee(

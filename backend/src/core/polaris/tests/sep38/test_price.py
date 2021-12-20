@@ -4,8 +4,8 @@ from unittest.mock import patch, Mock
 
 from stellar_sdk import Keypair
 
-from polaris.models import Asset, OffChainAsset, DeliveryMethod, ExchangePair
-from polaris.tests.helpers import mock_check_auth_success
+from core.polaris.models import Asset, OffChainAsset, DeliveryMethod, ExchangePair
+from core.polaris.tests.helpers import mock_check_auth_success
 
 
 PRICE_ENDPOINT = "/sep38/price"

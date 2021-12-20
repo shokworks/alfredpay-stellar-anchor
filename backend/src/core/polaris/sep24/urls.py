@@ -1,16 +1,16 @@
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 
-from polaris.sep24.info import info
-from polaris.sep24.fee import fee
-from polaris.sep24.transaction import more_info, transaction, transactions
-from polaris.sep24.withdraw import (
+from core.polaris.sep24.info import info
+from core.polaris.sep24.fee import fee
+from core.polaris.sep24.transaction import more_info, transaction, transactions
+from core.polaris.sep24.withdraw import (
     withdraw,
     get_interactive_withdraw,
     post_interactive_withdraw,
     complete_interactive_withdraw,
 )
-from polaris.sep24.deposit import (
+from core.polaris.sep24.deposit import (
     deposit,
     complete_interactive_deposit,
     post_interactive_deposit,

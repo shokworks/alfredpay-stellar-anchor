@@ -5,9 +5,9 @@ from datetime import timezone
 from rest_framework import serializers
 from django.db.models import QuerySet
 
-from polaris import settings
-from polaris.models import Transaction
-from polaris.settings import DATETIME_FORMAT
+from core.polaris import settings
+from core.polaris.models import Transaction
+from core.polaris.settings import DATETIME_FORMAT
 
 
 class TransactionSerializer(serializers.ModelSerializer):

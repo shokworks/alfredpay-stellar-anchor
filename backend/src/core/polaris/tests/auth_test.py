@@ -11,10 +11,10 @@ from stellar_sdk.sep.ed25519_public_key_signer import Ed25519PublicKeySigner
 from stellar_sdk.transaction_envelope import TransactionEnvelope
 from stellar_sdk.operation import ManageData
 
-from polaris import settings
-from polaris.tests.conftest import STELLAR_ACCOUNT_1
-from polaris.sep10.utils import check_auth
-from polaris.sep10.token import SEP10Token
+from core.polaris import settings
+from core.polaris.tests.conftest import STELLAR_ACCOUNT_1
+from core.polaris.sep10.utils import check_auth
+from core.polaris.sep10.token import SEP10Token
 
 endpoint = "/auth"
 

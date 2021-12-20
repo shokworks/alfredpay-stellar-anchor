@@ -2,8 +2,8 @@ import pytest
 from unittest.mock import Mock, patch
 from datetime import datetime
 
-from polaris.models import Transaction
-from polaris.management.commands.execute_outgoing_transactions import Command
+from core.polaris.models import Transaction
+from core.polaris.management.commands.execute_outgoing_transactions import Command
 
 
 def update_to_external(transaction):

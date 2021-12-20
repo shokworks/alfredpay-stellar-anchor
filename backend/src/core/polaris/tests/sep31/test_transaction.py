@@ -3,9 +3,9 @@ import uuid
 from unittest.mock import patch, Mock
 from datetime import datetime
 
-from polaris.tests.helpers import mock_check_auth_success
-from polaris.models import Transaction, Quote
-from polaris.sep31.serializers import SEP31TransactionSerializer
+from core.polaris.tests.helpers import mock_check_auth_success
+from core.polaris.models import Transaction, Quote
+from core.polaris.sep31.serializers import SEP31TransactionSerializer
 
 
 endpoint = "/sep31/transactions/"

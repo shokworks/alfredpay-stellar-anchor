@@ -2,7 +2,7 @@ from typing import Dict, Optional
 from decimal import Decimal, InvalidOperation
 from collections import defaultdict
 
-from polaris.utils import getLogger, get_quote_and_offchain_destination_asset
+from core.polaris.utils import getLogger, get_quote_and_offchain_destination_asset
 
 from django.utils.translation import gettext as _
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
@@ -12,13 +12,13 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.parsers import JSONParser
 
-from polaris.locale.utils import _is_supported_language, activate_lang_for_request
-from polaris.sep10.utils import validate_sep10_token
-from polaris.sep10.token import SEP10Token
-from polaris.models import Transaction, Asset, Quote
-from polaris.integrations import registered_sep31_receiver_integration
-from polaris.sep31.serializers import SEP31TransactionSerializer
-from polaris.utils import (
+from core.polaris.locale.utils import _is_supported_language, activate_lang_for_request
+from core.polaris.sep10.utils import validate_sep10_token
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.models import Transaction, Asset, Quote
+from core.polaris.integrations import registered_sep31_receiver_integration
+from core.polaris.sep31.serializers import SEP31TransactionSerializer
+from core.polaris.utils import (
     render_error_response,
     create_transaction_id,
     memo_hex_to_base64,

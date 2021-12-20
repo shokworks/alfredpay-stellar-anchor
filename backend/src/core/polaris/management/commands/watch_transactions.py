@@ -26,9 +26,9 @@ from stellar_sdk.operation import (
 from stellar_sdk.server import Server
 from stellar_sdk.client.aiohttp_client import AiohttpClient
 
-from polaris import settings
-from polaris.models import Asset, Transaction
-from polaris.utils import getLogger, maybe_make_callback_async
+from core.polaris import settings
+from core.polaris.models import Asset, Transaction
+from core.polaris.utils import getLogger, maybe_make_callback_async
 
 logger = getLogger(__name__)
 PaymentOpResult = Union[

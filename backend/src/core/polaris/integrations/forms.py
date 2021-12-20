@@ -3,7 +3,7 @@ from django.utils.formats import localize
 from django.utils.translation import gettext_lazy as _
 from django.forms.widgets import TextInput
 
-from polaris.models import Transaction, Asset
+from core.polaris.models import Transaction, Asset
 
 
 class CardNumberInput(TextInput):

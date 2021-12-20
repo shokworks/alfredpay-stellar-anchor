@@ -37,8 +37,8 @@ from stellar_sdk.exceptions import (
 from stellar_sdk import Keypair, MuxedAccount
 from stellar_sdk.client.requests_client import RequestsClient
 
-from polaris import settings
-from polaris.utils import getLogger, render_error_response
+from core.polaris import settings
+from core.polaris.utils import getLogger, render_error_response
 
 MIME_URLENCODE, MIME_JSON = "application/x-www-form-urlencoded", "application/json"
 logger = getLogger(__name__)

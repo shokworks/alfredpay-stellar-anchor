@@ -1,21 +1,21 @@
 import sys
 from typing import Callable
 
-from polaris.integrations.customers import (
+from core.polaris.integrations.customers import (
     CustomerIntegration,
     registered_customer_integration,
 )
-from polaris.integrations.fees import calculate_fee, registered_fee_func
-from polaris.integrations.forms import TransactionForm, CreditCardForm
-from polaris.integrations.info import default_info_func, registered_info_func
-from polaris.integrations.quote import QuoteIntegration, registered_quote_integration
-from polaris.integrations.rails import RailsIntegration, registered_rails_integration
-from polaris.integrations.sep31 import (
+from core.polaris.integrations.fees import calculate_fee, registered_fee_func
+from core.polaris.integrations.forms import TransactionForm, CreditCardForm
+from core.polaris.integrations.info import default_info_func, registered_info_func
+from core.polaris.integrations.quote import QuoteIntegration, registered_quote_integration
+from core.polaris.integrations.rails import RailsIntegration, registered_rails_integration
+from core.polaris.integrations.sep31 import (
     SEP31ReceiverIntegration,
     registered_sep31_receiver_integration,
 )
-from polaris.integrations.toml import get_stellar_toml, registered_toml_func
-from polaris.integrations.transactions import (
+from core.polaris.integrations.toml import get_stellar_toml, registered_toml_func
+from core.polaris.integrations.transactions import (
     DepositIntegration,
     WithdrawalIntegration,
     registered_deposit_integration,
@@ -47,7 +47,7 @@ def register_integrations(
             verbose_name = name
 
             def ready(self):
-                from polaris.integrations import register_integrations
+                from core.polaris.integrations import register_integrations
                 from myapp.integrations import (
                     MyDepositIntegration,
                     MyWithdrawalIntegration,

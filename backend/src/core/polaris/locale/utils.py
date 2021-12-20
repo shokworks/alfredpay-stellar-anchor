@@ -4,7 +4,7 @@ from django.utils import translation
 from django.utils.translation import gettext as _
 from rest_framework.response import Response
 
-from polaris.utils import render_error_response
+from core.polaris.utils import render_error_response
 
 
 def validate_language(

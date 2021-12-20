@@ -2,8 +2,8 @@ import pytest
 from datetime import datetime
 from unittest.mock import Mock, patch
 
-from polaris.models import Transaction
-from polaris.management.commands.poll_outgoing_transactions import Command
+from core.polaris.models import Transaction
+from core.polaris.management.commands.poll_outgoing_transactions import Command
 
 
 mock_return_passed_transactions = Mock(poll_outgoing_transactions=lambda x: list(x))

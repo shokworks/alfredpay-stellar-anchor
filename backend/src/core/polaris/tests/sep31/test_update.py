@@ -3,8 +3,8 @@ import uuid
 from unittest.mock import Mock, patch
 
 import pytest
-from polaris.tests.helpers import mock_check_auth_success
-from polaris.models import Transaction, Asset
+from core.polaris.tests.helpers import mock_check_auth_success
+from core.polaris.models import Transaction, Asset
 
 
 endpoint = "/sep31/transactions/"

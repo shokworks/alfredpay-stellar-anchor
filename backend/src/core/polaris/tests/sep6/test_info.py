@@ -2,7 +2,7 @@ import pytest
 import json
 from unittest.mock import patch
 
-from polaris.models import Transaction
+from core.polaris.models import Transaction
 
 
 INFO_PATH = "/sep6/info"

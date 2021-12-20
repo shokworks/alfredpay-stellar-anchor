@@ -6,9 +6,9 @@ import pytest
 from stellar_sdk import Keypair
 from rest_framework.request import Request
 
-from polaris.tests.helpers import mock_check_auth_success
-from polaris.models import Transaction, OffChainAsset, ExchangePair, Quote
-from polaris.sep31.transactions import process_post_response
+from core.polaris.tests.helpers import mock_check_auth_success
+from core.polaris.models import Transaction, OffChainAsset, ExchangePair, Quote
+from core.polaris.sep31.transactions import process_post_response
 
 
 transaction_endpoint = "/sep31/transactions"

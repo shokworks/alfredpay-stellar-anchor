@@ -29,21 +29,21 @@ from stellar_sdk.transaction_builder import TransactionBuilder
 from stellar_sdk.xdr import TransactionResult, OperationType
 from asgiref.sync import sync_to_async
 
-from polaris import settings
-from polaris.utils import (
+from core.polaris import settings
+from core.polaris.utils import (
     is_pending_trust,
     maybe_make_callback,
     maybe_make_callback_async,
     get_account_obj_async,
 )
-from polaris.integrations import (
+from core.polaris.integrations import (
     registered_deposit_integration as rdi,
     registered_rails_integration as rri,
     registered_fee_func,
     calculate_fee,
 )
-from polaris.models import Transaction
-from polaris.utils import getLogger, make_memo
+from core.polaris.models import Transaction
+from core.polaris.utils import getLogger, make_memo
 
 logger = getLogger(__name__)
 

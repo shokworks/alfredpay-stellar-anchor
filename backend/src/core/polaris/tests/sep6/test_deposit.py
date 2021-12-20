@@ -10,8 +10,8 @@ from typing import Dict
 from stellar_sdk import Keypair, MuxedAccount
 from rest_framework.request import Request
 
-from polaris.models import Transaction, Asset, OffChainAsset, ExchangePair, Quote
-from polaris.tests.helpers import (
+from core.polaris.models import Transaction, Asset, OffChainAsset, ExchangePair, Quote
+from core.polaris.tests.helpers import (
     mock_check_auth_success,
     mock_check_auth_success_client_domain,
     mock_check_auth_success_muxed_account,
@@ -19,8 +19,8 @@ from polaris.tests.helpers import (
     TEST_ACCOUNT_MEMO,
     TEST_MUXED_ACCOUNT,
 )
-from polaris.integrations import DepositIntegration
-from polaris.sep10.token import SEP10Token
+from core.polaris.integrations import DepositIntegration
+from core.polaris.sep10.token import SEP10Token
 
 DEPOSIT_PATH = "/sep6/deposit"
 

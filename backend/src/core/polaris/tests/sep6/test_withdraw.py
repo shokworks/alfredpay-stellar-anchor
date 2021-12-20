@@ -10,8 +10,8 @@ from unittest.mock import patch, Mock
 from stellar_sdk import Keypair, MuxedAccount
 from rest_framework.request import Request
 
-from polaris.tests.conftest import USD_DISTRIBUTION_SEED
-from polaris.tests.helpers import (
+from core.polaris.tests.conftest import USD_DISTRIBUTION_SEED
+from core.polaris.tests.helpers import (
     mock_check_auth_success,
     mock_check_auth_success_client_domain,
     mock_check_auth_success_muxed_account,
@@ -19,10 +19,10 @@ from polaris.tests.helpers import (
     TEST_MUXED_ACCOUNT,
     TEST_ACCOUNT_MEMO,
 )
-from polaris.integrations import WithdrawalIntegration
-from polaris.models import Transaction, Asset, OffChainAsset, ExchangePair, Quote
-from polaris.sep10.token import SEP10Token
-from polaris.utils import make_memo
+from core.polaris.integrations import WithdrawalIntegration
+from core.polaris.models import Transaction, Asset, OffChainAsset, ExchangePair, Quote
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.utils import make_memo
 
 WITHDRAW_PATH = "/sep6/withdraw"
 

@@ -16,10 +16,10 @@ from rest_framework.response import Response
 from rest_framework.renderers import BaseRenderer
 from rest_framework.decorators import api_view, renderer_classes
 
-from polaris import settings
-from polaris.utils import getLogger
-from polaris.integrations import registered_toml_func, get_stellar_toml
-from polaris.models import Asset
+from core.polaris import settings
+from core.polaris.utils import getLogger
+from core.polaris.integrations import registered_toml_func, get_stellar_toml
+from core.polaris.models import Asset
 
 
 logger = getLogger(__name__)

@@ -24,28 +24,28 @@ from stellar_sdk.exceptions import (
     ValueError as StellarSdkValueError,
 )
 
-from polaris import settings
-from polaris.templates import Template
-from polaris.utils import (
+from core.polaris import settings
+from core.polaris.templates import Template
+from core.polaris.utils import (
     getLogger,
     render_error_response,
     extract_sep9_fields,
     create_transaction_id,
     make_memo,
 )
-from polaris.sep10.utils import validate_sep10_token
-from polaris.sep10.token import SEP10Token
-from polaris.sep24.utils import (
+from core.polaris.sep10.utils import validate_sep10_token
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.sep24.utils import (
     check_authentication,
     interactive_url,
     authenticate_session,
     invalidate_session,
     interactive_args_validation,
 )
-from polaris.models import Asset, Transaction
-from polaris.integrations.forms import TransactionForm
-from polaris.locale.utils import validate_language, activate_lang_for_request
-from polaris.integrations import (
+from core.polaris.models import Asset, Transaction
+from core.polaris.integrations.forms import TransactionForm
+from core.polaris.locale.utils import validate_language, activate_lang_for_request
+from core.polaris.integrations import (
     registered_deposit_integration as rdi,
     registered_fee_func,
     calculate_fee,

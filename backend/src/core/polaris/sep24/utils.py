@@ -15,10 +15,10 @@ from django.conf import settings as django_settings
 from django.core.validators import URLValidator
 from stellar_sdk import MuxedAccount
 
-from polaris import settings
-from polaris.utils import getLogger
-from polaris.models import Asset, Transaction
-from polaris.utils import render_error_response, verify_valid_asset_operation
+from core.polaris import settings
+from core.polaris.utils import getLogger
+from core.polaris.models import Asset, Transaction
+from core.polaris.utils import render_error_response, verify_valid_asset_operation
 
 
 logger = getLogger(__name__)

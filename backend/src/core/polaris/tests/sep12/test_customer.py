@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.test import APIClient
 from stellar_sdk import Keypair, MuxedAccount
 
-from polaris.tests.helpers import (
+from core.polaris.tests.helpers import (
     mock_check_auth_success,
     mock_check_auth_success_muxed_account,
     mock_check_auth_success_with_memo,

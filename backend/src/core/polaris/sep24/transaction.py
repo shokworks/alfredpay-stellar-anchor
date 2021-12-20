@@ -9,9 +9,9 @@ from rest_framework.renderers import (
 
 from django.views.decorators.clickjacking import xframe_options_exempt
 
-from polaris.shared import endpoints
-from polaris.sep10.utils import validate_sep10_token
-from polaris.sep10.token import SEP10Token
+from core.polaris.shared import endpoints
+from core.polaris.sep10.utils import validate_sep10_token
+from core.polaris.sep10.token import SEP10Token
 
 
 @xframe_options_exempt

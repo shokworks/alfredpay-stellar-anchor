@@ -3,8 +3,8 @@ from datetime import timezone
 
 from rest_framework import serializers
 
-from polaris.models import Transaction
-from polaris.settings import DATETIME_FORMAT
+from core.polaris.models import Transaction
+from core.polaris.settings import DATETIME_FORMAT
 
 
 class SEP31TransactionSerializer(serializers.ModelSerializer):

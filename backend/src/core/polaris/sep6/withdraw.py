@@ -18,8 +18,8 @@ from stellar_sdk.exceptions import (
     ValueError as StellarSdkValueError,
 )
 
-from polaris import settings
-from polaris.utils import (
+from core.polaris import settings
+from core.polaris.utils import (
     getLogger,
     render_error_response,
     create_transaction_id,
@@ -28,13 +28,13 @@ from polaris.utils import (
     memo_hex_to_base64,
     get_quote_and_offchain_destination_asset,
 )
-from polaris.sep6.utils import validate_403_response
-from polaris.sep10.token import SEP10Token
-from polaris.sep10.utils import validate_sep10_token
-from polaris.shared.endpoints import SEP6_MORE_INFO_PATH
-from polaris.locale.utils import validate_language, activate_lang_for_request
-from polaris.models import Asset, Transaction, Quote
-from polaris.integrations import (
+from core.polaris.sep6.utils import validate_403_response
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.sep10.utils import validate_sep10_token
+from core.polaris.shared.endpoints import SEP6_MORE_INFO_PATH
+from core.polaris.locale.utils import validate_language, activate_lang_for_request
+from core.polaris.models import Asset, Transaction, Quote
+from core.polaris.integrations import (
     registered_withdrawal_integration as rwi,
     registered_fee_func,
     calculate_fee,

@@ -7,12 +7,12 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from polaris.sep10.utils import validate_sep10_token
-from polaris.sep10.token import SEP10Token
-from polaris.integrations import registered_quote_integration as rqi
-from polaris.utils import render_error_response, getLogger
-from polaris.models import DeliveryMethod
-from polaris.sep38.utils import (
+from core.polaris.sep10.utils import validate_sep10_token
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.integrations import registered_quote_integration as rqi
+from core.polaris.utils import render_error_response, getLogger
+from core.polaris.models import DeliveryMethod
+from core.polaris.sep38.utils import (
     get_buy_assets,
     get_sell_asset,
     get_buy_asset,

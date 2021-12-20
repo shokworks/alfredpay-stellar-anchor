@@ -1,5 +1,5 @@
 from django.urls import path
-from polaris.sep31 import info, transactions
+from core.polaris.sep31 import info, transactions
 
 urlpatterns = [
     path("info", info.info),

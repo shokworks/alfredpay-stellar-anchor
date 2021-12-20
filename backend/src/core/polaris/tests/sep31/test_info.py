@@ -1,8 +1,8 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from polaris.models import Transaction
-from polaris.sep31.info import validate_info_response
+from core.polaris.models import Transaction
+from core.polaris.sep31.info import validate_info_response
 
 
 endpoint = "/sep31/info"

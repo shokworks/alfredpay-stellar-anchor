@@ -8,11 +8,11 @@ import django.db.transaction
 from django.db.models import Q
 from django.core.management import BaseCommand
 
-from polaris import settings
-from polaris.integrations import registered_fee_func, calculate_fee
-from polaris.utils import getLogger, maybe_make_callback
-from polaris.models import Transaction
-from polaris.integrations import registered_rails_integration as rri
+from core.polaris import settings
+from core.polaris.integrations import registered_fee_func, calculate_fee
+from core.polaris.utils import getLogger, maybe_make_callback
+from core.polaris.models import Transaction
+from core.polaris.integrations import registered_rails_integration as rri
 
 
 logger = getLogger(__name__)

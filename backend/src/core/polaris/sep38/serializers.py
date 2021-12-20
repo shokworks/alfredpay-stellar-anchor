@@ -2,8 +2,8 @@ from datetime import timezone
 
 from rest_framework import serializers
 
-from polaris.models import Asset, Quote, OffChainAsset, DeliveryMethod
-from polaris.settings import DATETIME_FORMAT
+from core.polaris.models import Asset, Quote, OffChainAsset, DeliveryMethod
+from core.polaris.settings import DATETIME_FORMAT
 
 
 class QuoteSerializer(serializers.ModelSerializer):
