@@ -1,4 +1,4 @@
-from .base import *
+from .base2 import *
 
 
 SESSION_COOKIE_SECURE = True
@@ -7,6 +7,3 @@ SECURE_SSL_REDIRECT = False
 
 
 DEBUG = True
-
-
-DATABASES = config["DATABASES"]
