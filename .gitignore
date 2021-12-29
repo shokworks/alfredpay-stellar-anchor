@@ -155,3 +155,4 @@ polaris_app/
 polaris_client/
 prueba*
 backend/src/core/dashboard/myuser/migrations
+backend/src/media/*
