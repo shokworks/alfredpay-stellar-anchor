@@ -18,8 +18,7 @@ urlpatterns = [
     path("profile/", UPListView.as_view(),
         name="UserProfile"
         ),
-    path(
-        "profile/<int:pk>/", UPDetailView.as_view(),
+    path("profile/<int:pk>/", UPDetailView.as_view(),
         name="UserProfileDetail"
         )
 ]

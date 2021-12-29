@@ -3,6 +3,7 @@ from .views import generate_toml, MySEP10Auth
 # from .sep6 import urls as sep6_urls
 # from .sep24 import urls as sep24_urls
 
+
 urlpatterns = [
     path(".well-known/stellar.toml", generate_toml),
     path("auth2", MySEP10Auth.as_view()),

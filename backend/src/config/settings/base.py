@@ -99,22 +99,17 @@ WSGI_APPLICATION = 'config.wsgi.application'
 try:
     DATABASES = {
         'default': {
-            'ENGINE': env("ENGINE"),
-            'NAME': env("NAME"),
-            'USER': env("USER"),
-            'PASSWORD': env("PASSWORD"),
-            'HOST': env("HOST"),
-            'PORT': env("PORT"),
+            'ENGINE': env("DB_ENGINE"),
+            'NAME': env("DB_NAME"),
+            'USER': env("DB_USER"),
+            'PASSWORD': env("DB_PASSWORD"),
+            'HOST': env("DB_HOST"),
+            'PORT': env("DB_PORT"),
         }
     }
 
 except:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'mydatabase',
-        }
-    }
+    raise ImproperlyConfigured(f"Problems with the DATABASES file")
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
@@ -150,8 +145,8 @@ STATIC_URL = "/static/"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = '/media/'
-MEDIAFILES_DIRS = [os.path.join(BASE_DIR, 'media')]
-MEDIA_ROOT = str(BASE_DIR).split("config")[0]+"media"
+MEDIAFILES_DIRS = os.path.join(BASE_DIR, "server/media")
+MEDIA_ROOT = os.path.join(BASE_DIR, "server/media")
 
 REST_FRAMEWORK = {
    "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -160,8 +155,8 @@ REST_FRAMEWORK = {
 
    ],
    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-        "rest_framework.permissions.IsAdminUser"
+        # "rest_framework.permissions.IsAuthenticated",
+        # "rest_framework.permissions.IsAdminUser"
    ],
     "DEFAULT_PAGINATION_CLASS":
         "rest_framework.pagination.PageNumberPagination",

@@ -87,7 +87,10 @@ def generate_toml(generate_toml):
 
     toml_dict3 = {
         "CURRENCIES": [
-            {"code": asset.code, "issuer": asset.issuer}
+            {"code": asset.code, "issuer": asset.issuer,
+            "status": "test", "is_asset_anchored": False,
+            "anchor_asset_type": "fiat",
+            "desc": "Cross border remittance anchor that uses USDC as a medium of exchange."}
             for asset in Asset.objects.all().iterator()
         ],
     }

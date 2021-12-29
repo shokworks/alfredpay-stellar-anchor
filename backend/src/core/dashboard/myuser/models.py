@@ -65,6 +65,12 @@ class Profile(models.Model):
         instance.address = data.get(
             'address', instance.address
         )
+        instance.balance_usd = validated_data.get(
+            'balance_usd', instance.balance_usd
+        )
+        instance.balance_btc = validated_data.get(
+            'balance_btc', instance.balance_btc
+        )
         instance.save()
 
 @receiver(post_save, sender=User)
