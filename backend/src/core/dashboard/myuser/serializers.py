@@ -11,8 +11,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = [
-            'profile_id','profile_tin', 'birth_date',
-            'tax_country', 'tax_state', 'address',
+            'profile_id','profile_tin', 'birth_date', 'balance_usd',
+            'tax_country', 'tax_state', 'address', 'balance_btc',
             ]
         read_only_fields = ['profile_id']
 
@@ -35,6 +35,12 @@ class ProfileSerializer(serializers.ModelSerializer):
         )
         instance.address = validated_data.get(
             'address', instance.address
+        )
+        instance.balance_usd = validated_data.get(
+            'balance_usd', instance.balance_usd
+        )
+        instance.balance_btc = validated_data.get(
+            'balance_btc', instance.balance_btc
         )
         instance.save()
         return instance
@@ -62,6 +68,23 @@ class AdminUserProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id']
 
+    def dicc_profile_data(data):
+        """
+        Make a new dicc profile_data with the validated_data['profile'] List.
+        From the Profile inside the profile = ProfileSerializer().
+        """
+        new_data = {
+            'profile_tin': data['profile_tin'],
+            'birth_date': data['birth_date'],
+            'tax_country': data['tax_country'],
+            'tax_state': data['tax_state'],
+            'address': data['address'],
+            'balance_usd': data['balance_usd'],
+            'balance_btc': data['balance_btc'],
+        }
+        return new_data
+
+
     def create(self, validated_data):
         validated_data['password'] = make_password(
             validated_data.get('password')
@@ -76,17 +99,10 @@ class AdminUserProfileSerializer(serializers.ModelSerializer):
         user_id = get_user_model().objects.all().filter(
             username=validated_data['username']
             ).values().first()['id']
-        print(f"user_id: {user_id}")
-        newprofile_data = validated_data['profile']
-        profile_data = {'profile_tin': newprofile_data['profile_tin'],
-                        'birth_date': newprofile_data['birth_date'],
-                        'tax_country': newprofile_data['tax_country'],
-                        'tax_state': newprofile_data['tax_state'],
-                        'address': newprofile_data['address']}
+        profile_data = dicc_profile_data(validated_data['profile'])
         newinstance = Profile.objects.all().filter(
             profile_user=user_id
             ).first()
-        print(f"newinstance: {newinstance}\nprofile_data: {profile_data}")
         ProfileSerializer.update(self,
             instance=newinstance, validated_data=profile_data
             )
@@ -111,12 +127,7 @@ class AdminUserProfileSerializer(serializers.ModelSerializer):
         newinstance = Profile.objects.all().filter(
             profile_user=user_id
             ).first()
-        newprofile_data = validated_data['profile']
-        profile_data = {'profile_tin': newprofile_data['profile_tin'],
-                        'birth_date': newprofile_data['birth_date'],
-                        'tax_country': newprofile_data['tax_country'],
-                        'tax_state': newprofile_data['tax_state'],
-                        'address': newprofile_data['address']}
+        profile_data = dicc_profile_data(validated_data['profile'])
         ProfileSerializer.update(self,
             instance=newinstance, validated_data=profile_data
             )

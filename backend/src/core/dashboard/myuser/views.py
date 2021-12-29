@@ -14,7 +14,7 @@ from core.dashboard.myuser.serializers import (
 
 
 class AdminUserProfileListCreateAPIView(
-    # Authentication,
+    Authentication,
     generics.ListCreateAPIView
     ):
     permission_classes = (IsAdminUser, )
@@ -25,7 +25,7 @@ class AdminUserProfileListCreateAPIView(
 
 
 class AdminUserProfileRetrieveUpdateDestroyAPIView(
-    # Authentication,
+    Authentication,
     generics.RetrieveUpdateDestroyAPIView
     ):
     serializer_class = AdminUserProfileSerializer
@@ -43,7 +43,9 @@ class AdminUserProfileRetrieveUpdateDestroyAPIView(
         newuser.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class UserProfileListAPIView(Authentication, generics.ListAPIView):
+class UserProfileListAPIView(
+    Authentication, generics.ListAPIView
+    ):
     permission_classes = [IsAuthenticated]
     serializer_class = UserProfileSerializer
 

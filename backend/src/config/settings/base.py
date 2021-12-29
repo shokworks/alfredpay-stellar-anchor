@@ -118,20 +118,20 @@ except:
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-# AUTH_PASSWORD_VALIDATORS = [
-#     {
-#         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-#     },
-#     {
-#         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-#     },
-#     {
-#         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-#     },
-#     {
-#         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-#     },
-# ]
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'America/La_Paz'
@@ -149,9 +149,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, "server/collectstatic")
 STATIC_URL = "/static/"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# MEDIA_URL = '/media/'
-# MEDIAFILES_DIRS = [os.path.join(BASE_DIR, 'media')]
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media_root')
+MEDIA_URL = '/media/'
+MEDIAFILES_DIRS = [os.path.join(BASE_DIR, 'media')]
+MEDIA_ROOT = str(BASE_DIR).split("config")[0]+"media"
 
 REST_FRAMEWORK = {
    "DEFAULT_AUTHENTICATION_CLASSES": [

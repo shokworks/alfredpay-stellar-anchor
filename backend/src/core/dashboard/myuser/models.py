@@ -13,6 +13,9 @@ class Profile(models.Model):
     profile_tin = models.PositiveIntegerField(
         "Taxpayer Identification Number", default=0, blank=True
         )
+    imagen = models.ImageField(
+        default='default.jpeg', upload_to='profile_pics'
+        )
     birth_date = models.DateField(
         "Date of Birth", default='2000-01-01', blank=True
         )
@@ -27,6 +30,12 @@ class Profile(models.Model):
         "Address (Street address, City, State/Region, Country, Postal Code)",
         max_length=255, default='', blank=True
     )
+    balance_usd = models.FloatField(
+        "Balance in USD/$", default=100000.00, blank=False
+        )
+    balance_btc = models.FloatField(
+        "Balance in BitCoin", default=2.096, blank=False
+        )
 
     def __str__(self):
         return f'{self.profile_user.username} Profile'
