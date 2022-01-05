@@ -1,4 +1,7 @@
-from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.contrib.auth import (
+    get_user_model, login as django_login
+)
 from django.contrib.sessions.models import Session
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -6,17 +9,20 @@ from django.views.decorators.debug import sensitive_post_parameters
 
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.generics import (
-    GenericAPIView, RetrieveAPIView, RetrieveDestroyAPIView
+    GenericAPIView, RetrieveDestroyAPIView
     )
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from dj_rest_auth.app_settings import LoginSerializer
+from dj_rest_auth.app_settings import (
+    JWTSerializer, JWTSerializerWithExpiration, LoginSerializer,
+    TokenSerializer, create_token
+)
+from dj_rest_auth.models import get_token_model
+from dj_rest_auth.utils import jwt_encode
 
 from core.dashboard.login.serializers import MyUserTokenSerializer
-
 
 sensitive_post_parameters_m = method_decorator(
     sensitive_post_parameters(
@@ -27,11 +33,10 @@ sensitive_post_parameters_m = method_decorator(
 
 class LoginView(GenericAPIView):
     """
-    Check the credentials and return the REST Token
-    if the credentials are valid and authenticated.
-    Calls Django Auth login method to register User ID
-    in Django session framework
-    Accept the following POST parameters: username, password
+    Check the credentials and return the REST Token if the credentials are
+    valid and authenticated. Calls Django Auth login method to register User ID
+    in Django session framework.
+    Accept the following POST parameters: username, email, password.
     Return the REST Framework Token Object's key.
     """
     permission_classes = (AllowAny,)
@@ -113,9 +118,26 @@ class LoginView(GenericAPIView):
         return response
 
     def get(self, request, *args, **kwargs):
-        return Response({
-            'message': 'Come to the DarkSide we have Cookies!',
-            },status=status.HTTP_200_OK)
+        request_user = get_user_model().objects.filter(id=request.user.id)
+        if not request_user:
+            return Response({
+                'message': 'Come to the DarkSide we have Cookies!',
+            },status=status.HTTP_204_NO_CONTENT)
+
+        login_serializer = MyUserTokenSerializer(request.user)
+        login_serializer2 = MyUserTokenSerializer(data=login_serializer.data)
+        if login_serializer2.is_valid():
+            token_user = request_user.first()
+            token, created = Token.objects.get_or_create(user=token_user)
+            return Response({
+                'token': token.key,
+                'user': login_serializer.data,
+                'message': 'Login Successful!',
+                },status=status.HTTP_201_CREATED)
+        else:
+            return Response({
+                'error':'This user cannot log in.'
+                }, status=status.HTTP_401_UNAUTHORIZED)
 
     def post(self, request, *args, **kwargs):
         self.request = request
@@ -124,39 +146,6 @@ class LoginView(GenericAPIView):
 
         self.login()
         return self.get_response()
-
-
-class AuthTokenGeneration(RetrieveAPIView):
-    """
-    Reads UserModel and UserToken fields
-    Accepts GET methods.
-    Default display fields: user token, user id, username.
-    """
-    serializer_class = MyUserTokenSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def get(self, request, *args, **kwargs):
-        request_user = get_user_model().objects.filter(id=request.user.id)
-        login_serializer = MyUserTokenSerializer(request.user)
-        login_serializer2 = MyUserTokenSerializer(data=login_serializer.data)
-        if login_serializer2.is_valid():
-            token_user = request_user.first()
-            token, created = Token.objects.get_or_create(user=token_user)
-            if token.key:
-                return Response({
-                    'token': token.key,
-                    'user': login_serializer.data,
-                    'message': 'Login Successful!',
-                    },status=status.HTTP_201_CREATED)
-            else:
-                return Response({
-                    'message':
-                    'There is no token for that user at the moment!',
-                    }, status=status.HTTP_404_NOT_FOUND)
-        else:
-            return Response({
-                'error':'This user cannot log in.'
-                }, status=status.HTTP_401_UNAUTHORIZED)
 
 
 def Delete_Session(user_id):
