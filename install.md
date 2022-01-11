@@ -1,7 +1,7 @@
 # Installing Django-Polaris Project for Alfred Stellar-Anchor.
 ## _Alfred.pay an easier way to send and receive cross border payments._
 
-[![N|Solid](https://alfred-pay.com/wp-content/themes/Alfred%20Pay%20Theme/assets/images/Logo_Alfred.svg)](https://alfredpay.io)
+[![N|Solid](https://alfredpay.io/wp-content/themes/Alfred%20Pay%20Theme/assets/images/Logo_Alfred.svg)](https://alfredpay.io)
 
 _Alfred is a compliant Crypto to FIAT payment network where transactions and settlements are instant. Save time and money today with Alfred._
 
