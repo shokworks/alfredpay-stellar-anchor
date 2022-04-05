@@ -11,19 +11,19 @@ from rest_framework.request import Request
 from stellar_sdk.sep.ed25519_public_key_signer import Ed25519PublicKeySigner
 from stellar_sdk.sep.stellar_web_authentication import _verify_transaction_signatures
 
-from polaris.exceptions import (
+from core.polaris.exceptions import (
     TransactionSubmissionPending,
     TransactionSubmissionBlocked,
     TransactionSubmissionFailed,
 )
-from polaris.models import Transaction, Asset
-from polaris.utils import (
+from core.polaris.models import Transaction, Asset
+from core.polaris.utils import (
     getLogger,
     memo_hex_to_base64,
     create_deposit_envelope,
     get_account_obj,
 )
-from polaris import settings
+from core.polaris import settings
 
 
 logger = getLogger(__name__)

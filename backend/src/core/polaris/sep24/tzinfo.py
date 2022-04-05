@@ -8,7 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from django.contrib.sessions.backends.db import SessionStore
 
-from polaris.utils import render_error_response, getLogger
+from core.polaris.utils import render_error_response, getLogger
 
 
 logger = getLogger(__name__)

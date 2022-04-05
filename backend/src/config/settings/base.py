@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 env = environ.Env()
-env_file = str(BASE_DIR).split("config")[0]+"etc/.env"
+env_file = str(BASE_DIR).split("config")[0] + "etc/.env"
 
 try:
     os.path.exists(env_file)
@@ -37,9 +37,6 @@ BASE_APPS = [
 ]
 
 LOCAL_APPS = [
-    'core.dashboard',
-    'core.dashboard.login',
-    'core.dashboard.myuser',
     'core.polaris',
     'core.testing',
 ]
@@ -48,7 +45,6 @@ THIRD_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
-    'dj_rest_auth',
 ]
 
 INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
@@ -149,15 +145,15 @@ MEDIAFILES_DIRS = os.path.join(BASE_DIR, "server/media")
 MEDIA_ROOT = os.path.join(BASE_DIR, "server/media")
 
 REST_FRAMEWORK = {
-   "DEFAULT_AUTHENTICATION_CLASSES": [
-       "rest_framework.authentication.TokenAuthentication",
-       "rest_framework.authentication.SessionAuthentication",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
 
-   ],
-   "DEFAULT_PERMISSION_CLASSES": [
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
         # "rest_framework.permissions.IsAuthenticated",
         # "rest_framework.permissions.IsAdminUser"
-   ],
+    ],
     "DEFAULT_PAGINATION_CLASS":
         "rest_framework.pagination.PageNumberPagination",
     "DEFAULT_RENDERER_CLASSES": [

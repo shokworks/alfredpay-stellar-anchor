@@ -15,7 +15,18 @@ from rest_framework.response import Response
 from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
 from rest_framework.views import APIView
 
+from stellar_sdk import Keypair
+from stellar_sdk.client.requests_client import RequestsClient
 from stellar_sdk.operation import ManageData
+from stellar_sdk.exceptions import (
+    NotFoundError,
+    ConnectionError,
+    Ed25519PublicKeyInvalidError,
+)
+from stellar_sdk.sep.exceptions import (
+    InvalidSep10ChallengeError,
+    StellarTomlNotFoundError,
+)
 from stellar_sdk.sep.stellar_toml import fetch_stellar_toml
 
 from core.polaris import settings
@@ -24,22 +35,6 @@ from core.polaris.models import Asset
 from core.polaris.utils import getLogger, render_error_response
 from core.polaris.sep1.views import PolarisPlainTextRenderer, generate_toml
 from core.polaris.sep10.views import SEP10Auth
-
-from stellar_sdk import Keypair
-from stellar_sdk.client.requests_client import RequestsClient
-from stellar_sdk.operation import ManageData
-from stellar_sdk.sep.stellar_toml import fetch_stellar_toml
-from stellar_sdk.sep.exceptions import (
-    InvalidSep10ChallengeError,
-    StellarTomlNotFoundError,
-)
-from stellar_sdk.exceptions import (
-    NotFoundError,
-    ConnectionError,
-    Ed25519PublicKeyInvalidError,
-)
-from core.polaris import settings
-from core.polaris.utils import getLogger, render_error_response
 
 from core.testing.stellar_web_authentication import (
     build_challenge_transaction,
@@ -50,6 +45,7 @@ from core.testing.stellar_web_authentication import (
 
 MIME_URLENCODE, MIME_JSON = "application/x-www-form-urlencoded", "application/json"
 logger = getLogger(__name__)
+
 
 @api_view(["GET", "HEAD"])
 @renderer_classes([PolarisPlainTextRenderer])
@@ -108,7 +104,7 @@ def generate_toml(generate_toml):
                 "anchor_asset_type": "fiat", "anchor_asset": "USD", "name": "USD Coin",
                 "redemption_instructions": "Redeemable through a Alfred-pay account at https://alfredpay.io",
                 "desc": "Cross border remittance anchor that uses USDC as a medium of exchange."
-                }
+            }
             currencies.append(currencies1)
         elif asset.code == "PODC":
             currencies1b = {
@@ -117,15 +113,15 @@ def generate_toml(generate_toml):
                 "anchor_asset_type": "fiat", "anchor_asset": "POD", "name": "POD Coin",
                 "redemption_instructions": "Redeemable through a Alfred-pay account at https://alfredpay.io",
                 "desc": "Cross border remittance anchor that uses PODC as a medium of exchange."
-                }
+            }
             currencies.append(currencies1b)
         else:
             currencies2 = {"code": asset.code, "issuer": asset.issuer,
-                "status": "test", "is_asset_anchored": False}
+                           "status": "test", "is_asset_anchored": False}
             currencies.append(currencies2)
     toml_dict3 = {}
     toml_dict3["CURRENCIES"] = []
-    toml_dict3.update({"CURRENCIES":currencies})
+    toml_dict3.update({"CURRENCIES": currencies})
 
     content = toml.dumps(toml_dict1) + "\n" + toml.dumps(toml_dict2) + "\n" + toml.dumps(toml_dict3)
 
@@ -310,4 +306,3 @@ class MySEP10Auth(SEP10Auth):
             f"Challenge verified using account signers: {[s.account_id for s in signers_found]}"
         )
         return client_domain, None
-

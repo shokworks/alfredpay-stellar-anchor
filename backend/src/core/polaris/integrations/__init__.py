@@ -21,6 +21,11 @@ from core.polaris.integrations.transactions import (
     registered_deposit_integration,
     registered_withdrawal_integration,
 )
+from core.polaris.integrations.custody import (
+    CustodyIntegration,
+    SelfCustodyIntegration,
+    registered_custody_integration,
+)
 
 
 def register_integrations(
