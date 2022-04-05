@@ -143,7 +143,7 @@ django-polaris*
 Documenta*
 backend/polaris.tar
 backend/src/base-dir
-# backend/src/core/polaris
+backend/src/config/server/
 backend/src/core/polaris/migrations*
 backend/src/core/test.py
 backend/src/core/testing/*.json
@@ -151,12 +151,8 @@ backend/src/core/testing/tests2.py
 backend/src/core/testing/views-bkp.py
 backend/src/core/testing-bkp*
 backend/src/etc/*
-etc-bkp*
-polaris_app/
-polaris_client/
-prueba*
-backend/src/core/dashboard/myuser/migrations
 backend/src/media/*
-backend/src/config/server/
-polaris-bkp
+etc-bkp*
+polaris_*
+prueba*
 frontend
