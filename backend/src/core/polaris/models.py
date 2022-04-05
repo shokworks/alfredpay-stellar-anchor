@@ -117,8 +117,7 @@ class EncryptedTextField(models.TextField):
 
 
 class Asset(TimeStampedModel):
-    # code = models.CharField(max_length=255)
-    code = models.TextField()
+    code = models.CharField(max_length=255)
     """The asset code as defined on the Stellar network."""
 
     issuer = models.TextField(validators=[MinLengthValidator(56)])
@@ -497,10 +496,10 @@ class Transaction(models.Model):
     is not null, ``Transaction.muxed_account`` will be null.
     """
 
-    asset = models.ForeignKey("Asset", on_delete=models.CASCADE)
+    asset = models.ForeignKey("Asset", on_delete=models.PROTECT)
     """The Django foreign key to the associated :class:`Asset`"""
 
-    quote = models.ForeignKey("Quote", null=True, blank=True, on_delete=models.CASCADE)
+    quote = models.ForeignKey("Quote", null=True, blank=True, on_delete=models.PROTECT)
 
     # These fields can be shown through an API:
     kind = models.CharField(choices=KIND, default=KIND.deposit, max_length=20)
@@ -815,8 +814,7 @@ class Quote(models.Model):
     The unique ID for the quote.
     """
 
-    # stellar_account = models.CharField(max_length=255)
-    stellar_account = models.TextField()
+    stellar_account = models.CharField(max_length=255)
     """
     The Stellar (G...) account authenticated via SEP-10 when this Quote was created.
     Note that if ``Quote.muxed_account`` is not null, this column's value is 
@@ -842,21 +840,18 @@ class Quote(models.Model):
     Choices for type.
     """
 
-    # type = models.CharField(max_length=80, choices=TYPE)
-    type = models.TextField(choices=TYPE)
+    type = models.CharField(max_length=80, choices=TYPE)
     """
     The type of quote. Firm quotes have a non-null price and expiration, indicative quotes 
     may have a null price and expiration.
     """
 
-    # sell_asset = models.CharField(max_length=255)
-    sell_asset = models.TextField()
+    sell_asset = models.CharField(max_length=255)
     """
     The asset the client would like to sell. Ex. USDC:G..., iso4217:ARS
     """
 
-    # buy_asset = models.CharField(max_length=255)
-    buy_asset = models.TextField()
+    buy_asset = models.CharField(max_length=255)
     """
     The asset the client would like to receive for some amount of sell_asset.
     """
@@ -887,7 +882,7 @@ class Quote(models.Model):
         "DeliveryMethod",
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="+",
     )
     """
@@ -898,7 +893,7 @@ class Quote(models.Model):
         "DeliveryMethod",
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="+",
     )
     """
@@ -924,14 +919,12 @@ class OffChainAsset(models.Model):
     off-chain asset has a set of delivery methods by which the user can provide funds to
     the anchor and by which the anchor can deliver funds to the user.
     """
-    # scheme = models.CharField(max_length=255)
-    scheme = models.TextField()
+    scheme = models.CharField(max_length=255)
     """
     The scheme of the off-chain asset as defined by SEP-38's Asset Identification Format.
     """
 
-    # identifier = models.CharField(max_length=255)
-    identifier = models.TextField()
+    identifier = models.CharField(max_length=255)
     """
     The identifier of the off-chain asset as defined by SEP-38's Asset Identification Format.
     """
@@ -985,21 +978,18 @@ class DeliveryMethod(models.Model):
     The types of delivery methods.
     """
 
-    # type = models.CharField(max_length=80, choices=TYPE)
-    type = models.TextField(choices=TYPE)
+    type = models.CharField(max_length=80, choices=TYPE)
     """
     The type of delivery method. Sell methods describe how a client can deliver funds to the 
     anchor. Buy methods describe how a client can receive or collect funds from the anchor.
     """
 
-    # name = models.CharField(max_length=255)
-    name = models.TextField()
+    name = models.CharField(max_length=255)
     """
     The name of the delivery method, to be used in SEP-38 request and response bodies.
     """
 
-    # description = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.CharField(max_length=255)
     """
     The human-readable description of the deliver method, to be used in SEP-38 
     response bodies.
@@ -1024,15 +1014,13 @@ class ExchangePair(models.Model):
     be created if each asset can be bought or sold for the other.
     """
 
-    # buy_asset = models.CharField(max_length=255)
-    buy_asset = models.TextField()
+    buy_asset = models.CharField(max_length=255)
     """
     The asset the client can purchase with sell_asset using SEP-38's Asset 
     Identification Format.
     """
 
-    # sell_asset = models.CharField(max_length=255)
-    sell_asset = models.TextField()
+    sell_asset = models.CharField(max_length=255)
     """
     The asset the client can provide in exchange for buy_asset using SEP-38's
     Asset Identification Format.
