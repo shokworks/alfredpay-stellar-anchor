@@ -14,7 +14,7 @@ def ready(self):
         MyWithdrawalIntegration,
         # MyCustomerIntegration,
         # toml_integration,
-        # fee_integrations,
+        # registered_fee_func,
         # scripts_integration,
         info_integration
     )
@@ -25,5 +25,5 @@ def ready(self):
         # customer=MyCustomerIntegration(),
         # toml=toml_integration,
         sep6_info=info_integration,
-        # fee=fee_integration
+        # fee=registered_fee_func
     )

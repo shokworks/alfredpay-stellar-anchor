@@ -9,7 +9,7 @@ from core.polaris.tests.helpers import mock_check_auth_success
 
 
 PRICE_ENDPOINT = "/sep38/price"
-code_path = "polaris.sep38.prices"
+code_path = "core.polaris.sep38.prices"
 
 
 def default_data():
@@ -46,7 +46,7 @@ def default_data():
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_success_no_optional_params(mock_rqi, client):
     data = default_data()
     mock_rqi.get_price = Mock(return_value=Decimal("2.12"))
@@ -81,7 +81,7 @@ def test_get_price_success_no_optional_params(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_success_country_code_buy_delivery_method(mock_rqi, client):
     data = default_data()
     mock_rqi.get_price = Mock(return_value=Decimal("2.12"))
@@ -118,7 +118,7 @@ def test_get_price_success_country_code_buy_delivery_method(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_success_country_code_sell_delivery_method(mock_rqi, client):
     data = default_data()
     # swap exchange pair
@@ -156,7 +156,7 @@ def test_get_price_success_country_code_sell_delivery_method(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_success_no_optional_params_swap_exchange_pair(mock_rqi, client):
     data = default_data()
     pair = data["exchange_pairs"][0]
@@ -195,7 +195,7 @@ def test_get_price_success_no_optional_params_swap_exchange_pair(mock_rqi, clien
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_both_amounts(mock_rqi, client):
     data = default_data()
     mock_rqi.get_price = Mock(return_value=Decimal("2.12"))
@@ -220,7 +220,7 @@ def test_get_price_failure_both_amounts(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_success_no_exchange_pairs(mock_rqi, client):
     data = default_data()
     response = client.get(
@@ -238,7 +238,7 @@ def test_get_price_success_no_exchange_pairs(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_missing_sell_asset(mock_rqi, client):
     data = default_data()
     response = client.get(
@@ -257,7 +257,7 @@ def test_get_price_failure_missing_sell_asset(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_missing_buy_asset(mock_rqi, client):
     data = default_data()
     response = client.get(
@@ -276,7 +276,7 @@ def test_get_price_failure_missing_buy_asset(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_both_delivery_methods(mock_rqi, client):
     data = default_data()
     response = client.get(
@@ -298,7 +298,7 @@ def test_get_price_failure_both_delivery_methods(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_sell_stellar_with_sell_delivery_method(mock_rqi, client):
     data = default_data()
     response = client.get(
@@ -319,7 +319,7 @@ def test_get_price_failure_sell_stellar_with_sell_delivery_method(mock_rqi, clie
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_sell_offchain_with_buy_delivery_method(mock_rqi, client):
     data = default_data()
 
@@ -346,7 +346,7 @@ def test_get_price_failure_sell_offchain_with_buy_delivery_method(mock_rqi, clie
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_bad_sell_stellar_format(mock_rqi, client):
     data = default_data()
     response = client.get(
@@ -364,7 +364,7 @@ def test_get_price_failure_bad_sell_stellar_format(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_bad_buy_stellar_format(mock_rqi, client):
     data = default_data()
     response = client.get(
@@ -382,7 +382,7 @@ def test_get_price_failure_bad_buy_stellar_format(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_bad_sell_offchain_format(mock_rqi, client):
     data = default_data()
     response = client.get(
@@ -400,7 +400,7 @@ def test_get_price_failure_bad_sell_offchain_format(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_bad_buy_offchain_format(mock_rqi, client):
     data = default_data()
     response = client.get(
@@ -418,7 +418,7 @@ def test_get_price_failure_bad_buy_offchain_format(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_error_bad_price(mock_rqi, client):
     data = default_data()
     mock_rqi.get_price.return_value = Decimal("2.123")
@@ -438,7 +438,7 @@ def test_get_price_error_bad_price(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_sell_stellar_asset_not_found(mock_rqi, client):
     data = default_data()
 
@@ -462,7 +462,7 @@ def test_get_price_failure_sell_stellar_asset_not_found(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_sell_offchain_asset_not_found(mock_rqi, client):
     data = default_data()
 
@@ -490,7 +490,7 @@ def test_get_price_failure_sell_offchain_asset_not_found(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_buy_stellar_asset_not_found(mock_rqi, client):
     data = default_data()
 
@@ -518,7 +518,7 @@ def test_get_price_failure_buy_stellar_asset_not_found(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_buy_offchain_asset_not_found(mock_rqi, client):
     data = default_data()
 
@@ -542,7 +542,7 @@ def test_get_price_failure_buy_offchain_asset_not_found(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_bad_buy_delivery_method(mock_rqi, client):
     data = default_data()
 
@@ -564,7 +564,7 @@ def test_get_price_failure_bad_buy_delivery_method(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_bad_country_code(mock_rqi, client):
     data = default_data()
 
@@ -586,7 +586,7 @@ def test_get_price_failure_bad_country_code(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_bad_sell_delivery_method(mock_rqi, client):
     data = default_data()
     # swap exchange pair
@@ -612,7 +612,7 @@ def test_get_price_failure_bad_sell_delivery_method(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_bad_sell_amount(mock_rqi, client):
     data = default_data()
 
@@ -633,7 +633,7 @@ def test_get_price_failure_bad_sell_amount(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_bad_buy_amount(mock_rqi, client):
     data = default_data()
 
@@ -654,7 +654,7 @@ def test_get_price_failure_bad_buy_amount(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_bad_return_type(mock_rqi, client):
     data = default_data()
     mock_rqi.get_price.return_value = None
@@ -685,7 +685,7 @@ def test_get_price_failure_bad_return_type(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_anchor_raises_value_error(mock_rqi, client):
     data = default_data()
     mock_rqi.get_price.side_effect = ValueError("test")
@@ -716,7 +716,7 @@ def test_get_price_failure_anchor_raises_value_error(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_anchor_raises_runtime_error(mock_rqi, client):
     data = default_data()
     mock_rqi.get_price.side_effect = RuntimeError("test")
@@ -747,7 +747,7 @@ def test_get_price_failure_anchor_raises_runtime_error(mock_rqi, client):
 
 @pytest.mark.django_db
 @patch(f"{code_path}.rqi")
-@patch("polaris.sep10.utils.check_auth", mock_check_auth_success)
+@patch("core.polaris.sep10.utils.check_auth", mock_check_auth_success)
 def test_get_price_failure_anchor_raises_unexpected_error(mock_rqi, client):
     data = default_data()
     mock_rqi.get_price.side_effect = IndexError("test")

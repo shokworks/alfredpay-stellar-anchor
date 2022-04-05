@@ -49,15 +49,22 @@
       {% block "content" %}
       {% endblock %}
     </div>
+
+    {# Rendered via custom extra_body template #}
+    {% block "extra_body" %}
+    {% endblock %}
+
     <div class="bottom section">
       {% block "footer" %}
       {% endblock %}
     </div>
+
     <script type="text/javascript" src="{% static 'polaris/scripts/number.js' %}"></script>
     <script type="text/javascript" src="{% static 'polaris/scripts/styleHelpers.js' %}"></script>
     <script type="text/javascript" src="{% static 'polaris/scripts/disableSubmitOnClick.js' %}"></script>
     <script type="text/javascript" src="{% static 'polaris/scripts/dynamicAmountPadding.js' %}"></script>
     <script type="text/javascript" src="{% static 'polaris/scripts/feeTable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'polaris/scripts/timezone.js' %}"></script>
     <script type="text/javascript">
       styleHelpers({
         languageCode: "{{ LANGUAGE_CODE }}"
@@ -69,7 +76,7 @@
         depositFeePercent: {{ asset.deposit_fee_percent|default:0 }},
         withdrawalFeeFixed: {{ asset.withdrawal_fee_fixed|default:0 }},
         withdrawalFeePercent: {{ asset.withdrawal_fee_percent|default:0 }},
-        significantDecimals: {{ asset.significant_decimals }},
+        significantDecimals: {{ asset.significant_decimals|default:2 }},
         symbol: "{{ symbol }}",
         assetCode: "{{ asset.code }}",
         useFeeEndpoint: "{{ use_fee_endpoint }}" === "True",
@@ -78,11 +85,11 @@
         formatNumber: formatNumber,
         showFeeTable: "{{ show_fee_table }}" === "True"
       });
+      fetchTimezone({
+        tzEndpoint: "{{ timezone_endpoint }}",
+        sessionId: "{{ session_id }}",
+        sessionOffset: {{ current_offset|default:0 }}
+      });
     </script>
-
-    {# Rendered via custom extra_body template #}
-    {% block "extra_body" %}
-    {% endblock %}
-
   </body>
 </html>

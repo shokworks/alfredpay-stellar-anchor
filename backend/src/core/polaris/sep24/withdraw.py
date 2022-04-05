@@ -1,6 +1,7 @@
 from decimal import Decimal, DecimalException
 from urllib.parse import urlencode
 
+from django.conf import settings as django_settings
 from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.shortcuts import redirect
@@ -29,7 +30,7 @@ from core.polaris.utils import (
     render_error_response,
     extract_sep9_fields,
     create_transaction_id,
-    memo_hex_to_base64,
+    validate_account_and_memo,
 )
 from core.polaris.sep24.utils import (
     interactive_url,
@@ -37,6 +38,7 @@ from core.polaris.sep24.utils import (
     authenticate_session,
     invalidate_session,
     interactive_args_validation,
+    get_timezone_utc_offset,
 )
 from core.polaris.sep10.utils import validate_sep10_token
 from core.polaris.sep10.token import SEP10Token
@@ -45,6 +47,7 @@ from core.polaris.integrations.forms import TransactionForm
 from core.polaris.locale.utils import validate_language, activate_lang_for_request
 from core.polaris.integrations import (
     registered_withdrawal_integration as rwi,
+    registered_custody_integration as rci,
     registered_fee_func,
     calculate_fee,
     registered_toml_func,
@@ -179,23 +182,29 @@ def post_interactive_withdraw(request: Request) -> Response:
             # ensure all changes from `after_form_validation()` have been saved to the db
             transaction.refresh_from_db()
 
-            # Add memo now that interactive flow is complete
-            #
-            # We use the transaction ID as a memo on the Stellar transaction for the
-            # payment in the withdrawal. This lets us identify that as uniquely
-            # corresponding to this `Transaction` in the database. But a UUID4 is a 32
-            # character hex string, while the Stellar HashMemo requires a 64 character
-            # hex-encoded (32 byte) string. So, we zero-pad the ID to create an
-            # appropriately sized string for the `HashMemo`.
-            transaction_id_hex = transaction.id.hex
-            padded_hex_memo = "0" * (64 - len(transaction_id_hex)) + transaction_id_hex
-            transaction.memo = memo_hex_to_base64(padded_hex_memo)
-
             if transaction.status != transaction.STATUS.pending_anchor:
+                # Add receiving account and memo now that anchor is ready to receive payment
                 transaction.status = Transaction.STATUS.pending_user_transfer_start
+                try:
+                    receiving_account, memo, memo_type = validate_account_and_memo(
+                        *rci.get_receiving_account_and_memo(
+                            request=request, transaction=transaction
+                        )
+                    )
+                except ValueError:
+                    logger.exception(
+                        "CustodyIntegration.get_receiving_account_and_memo() returned invalid values"
+                    )
+                    return render_error_response(
+                        _("unable to process the request"), status_code=500
+                    )
+                transaction.receiving_anchor_account = receiving_account
+                transaction.memo = memo
+                transaction.memo_type = memo_type
+                transaction.save()
             else:
                 logger.info(f"Transaction {transaction.id} is pending KYC approval")
-            transaction.save()
+
             args = {"id": transaction.id, "initialLoad": "true"}
             if callback:
                 args["callback"] = callback
@@ -221,17 +230,24 @@ def post_interactive_withdraw(request: Request) -> Response:
         if amount:
             url_args["amount"] = amount
 
-        toml_data = registered_toml_func(request)
+        current_offset = get_timezone_utc_offset(
+            request.session.get("timezone") or django_settings.TIME_ZONE
+        )
+        toml_data = registered_toml_func(request=request)
         post_url = f"{reverse('post_interactive_withdraw')}?{urlencode(url_args)}"
         content = {
             "form": form,
             "post_url": post_url,
             "operation": settings.OPERATION_WITHDRAWAL,
             "asset": asset,
+            "symbol": asset.symbol,
             "show_fee_table": isinstance(form, TransactionForm),
             "use_fee_endpoint": registered_fee_func != calculate_fee,
             "org_logo_url": toml_data.get("DOCUMENTATION", {}).get("ORG_LOGO"),
             "additive_fees_enabled": settings.ADDITIVE_FEES_ENABLED,
+            "timezone_endpoint": reverse("tzinfo"),
+            "session_id": request.session.session_key,
+            "current_offset": current_offset,
             **content_from_anchor,
         }
         return Response(
@@ -352,7 +368,11 @@ def get_interactive_withdraw(request: Request) -> Response:
     if amount:
         url_args["amount"] = amount
 
+    current_offset = get_timezone_utc_offset(
+        request.session.get("timezone") or django_settings.TIME_ZONE
+    )
     post_url = f"{reverse('post_interactive_withdraw')}?{urlencode(url_args)}"
+    toml_data = registered_toml_func(request=request)
     content = {
         "form": form,
         "post_url": post_url,
@@ -361,7 +381,11 @@ def get_interactive_withdraw(request: Request) -> Response:
         "symbol": asset.symbol,
         "show_fee_table": isinstance(form, TransactionForm),
         "use_fee_endpoint": registered_fee_func != calculate_fee,
+        "org_logo_url": toml_data.get("DOCUMENTATION", {}).get("ORG_LOGO"),
         "additive_fees_enabled": settings.ADDITIVE_FEES_ENABLED,
+        "timezone_endpoint": reverse("tzinfo"),
+        "session_id": request.session.session_key,
+        "current_offset": current_offset,
         **content_from_anchor,
     }
 
@@ -396,12 +420,7 @@ def withdraw(token: SEP10Token, request: Request,) -> Response:
 
     # Verify that the asset code exists in our database, with withdraw enabled.
     asset = Asset.objects.filter(code=asset_code).first()
-    if not (
-        asset
-        and asset.withdrawal_enabled
-        and asset.sep24_enabled
-        and asset.distribution_account
-    ):
+    if not (asset and asset.withdrawal_enabled and asset.sep24_enabled):
         return render_error_response(_("invalid operation for asset %s") % asset_code)
 
     amount = None
@@ -455,7 +474,6 @@ def withdraw(token: SEP10Token, request: Request,) -> Response:
         asset=asset,
         kind=Transaction.KIND.withdrawal,
         status=Transaction.STATUS.incomplete,
-        receiving_anchor_account=asset.distribution_account,
         memo_type=Transaction.MEMO_TYPES.hash,
         protocol=Transaction.PROTOCOL.sep24,
         more_info_url=request.build_absolute_uri(

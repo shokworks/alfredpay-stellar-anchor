@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.shortcuts import redirect
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.utils.translation import gettext as _
+from django.conf import settings as django_settings
 
 from rest_framework import status
 from rest_framework.decorators import api_view, renderer_classes, parser_classes
@@ -32,6 +33,7 @@ from core.polaris.utils import (
     extract_sep9_fields,
     create_transaction_id,
     make_memo,
+    get_account_obj,
 )
 from core.polaris.sep10.utils import validate_sep10_token
 from core.polaris.sep10.token import SEP10Token
@@ -41,6 +43,7 @@ from core.polaris.sep24.utils import (
     authenticate_session,
     invalidate_session,
     interactive_args_validation,
+    get_timezone_utc_offset,
 )
 from core.polaris.models import Asset, Transaction
 from core.polaris.integrations.forms import TransactionForm
@@ -50,6 +53,7 @@ from core.polaris.integrations import (
     registered_fee_func,
     calculate_fee,
     registered_toml_func,
+    registered_custody_integration as rci,
 )
 
 logger = getLogger(__name__)
@@ -207,15 +211,24 @@ def post_interactive_deposit(request: Request) -> Response:
         if amount:
             url_args["amount"] = amount
 
+        current_offset = get_timezone_utc_offset(
+            request.session.get("timezone") or django_settings.TIME_ZONE
+        )
+        toml_data = registered_toml_func(request=request)
         post_url = f"{reverse('post_interactive_deposit')}?{urlencode(url_args)}"
         content = {
             "form": form,
             "post_url": post_url,
             "operation": settings.OPERATION_DEPOSIT,
             "asset": asset,
+            "symbol": asset.symbol,
             "show_fee_table": isinstance(form, TransactionForm),
             "use_fee_endpoint": registered_fee_func != calculate_fee,
             "additive_fees_enabled": settings.ADDITIVE_FEES_ENABLED,
+            "org_logo_url": toml_data.get("DOCUMENTATION", {}).get("ORG_LOGO"),
+            "timezone_endpoint": reverse("tzinfo"),
+            "session_id": request.session.session_key,
+            "current_offset": current_offset,
             **content_from_anchor,
         }
         return Response(
@@ -336,6 +349,9 @@ def get_interactive_deposit(request: Request) -> Response:
     if amount:
         url_args["amount"] = amount
 
+    current_offset = get_timezone_utc_offset(
+        request.session.get("timezone") or django_settings.TIME_ZONE
+    )
     toml_data = registered_toml_func(request=request)
     post_url = f"{reverse('post_interactive_deposit')}?{urlencode(url_args)}"
     content = {
@@ -348,6 +364,9 @@ def get_interactive_deposit(request: Request) -> Response:
         "use_fee_endpoint": registered_fee_func != calculate_fee,
         "org_logo_url": toml_data.get("DOCUMENTATION", {}).get("ORG_LOGO"),
         "additive_fees_enabled": settings.ADDITIVE_FEES_ENABLED,
+        "timezone_endpoint": reverse("tzinfo"),
+        "session_id": request.session.session_key,
+        "current_offset": current_offset,
         **content_from_anchor,
     }
 
@@ -403,7 +422,7 @@ def deposit(token: SEP10Token, request: Request) -> Response:
     # Ensure memo won't cause stellar transaction to fail when submitted
     try:
         make_memo(request.data.get("memo"), request.data.get("memo_type"))
-    except ValueError:
+    except (ValueError, TypeError):
         return render_error_response(_("invalid 'memo' for 'memo_type'"))
 
     # Verify that the asset code exists in our database, with deposit enabled.
@@ -422,9 +441,10 @@ def deposit(token: SEP10Token, request: Request) -> Response:
         if not (asset.deposit_min_amount <= amount <= asset.deposit_max_amount):
             return render_error_response(_("invalid 'amount'"))
 
+    stellar_account = destination_account
     if destination_account.startswith("M"):
         try:
-            StrKey.decode_muxed_account(destination_account)
+            stellar_account = StrKey.decode_muxed_account(destination_account).ed25519
         except (MuxedEd25519AccountInvalidError, StellarSdkValueError):
             return render_error_response(_("invalid 'account'"))
     else:
@@ -432,6 +452,14 @@ def deposit(token: SEP10Token, request: Request) -> Response:
             Keypair.from_public_key(destination_account)
         except Ed25519PublicKeyInvalidError:
             return render_error_response(_("invalid 'account'"))
+
+    if not rci.account_creation_supported:
+        try:
+            get_account_obj(Keypair.from_public_key(stellar_account))
+        except RuntimeError:
+            return render_error_response(
+                _("public key 'account' must be a funded Stellar account")
+            )
 
     if sep9_fields:
         try:

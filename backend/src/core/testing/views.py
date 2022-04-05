@@ -1,18 +1,25 @@
 import os
+import jwt
 import toml
 from urllib.parse import urlparse
 
+from django.contrib.staticfiles import finders
+from django.utils.encoding import smart_str
 from django.utils.translation import gettext
 
 from rest_framework import status
-from rest_framework.request import Request
-from rest_framework.response import Response
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
-from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
+from rest_framework.views import APIView
+
+from stellar_sdk.operation import ManageData
+from stellar_sdk.sep.stellar_toml import fetch_stellar_toml
 
 from core.polaris import settings
-from core.polaris.integrations import registered_toml_func
+from core.polaris.integrations import registered_toml_func, get_stellar_toml
 from core.polaris.models import Asset
 from core.polaris.utils import getLogger, render_error_response
 from core.polaris.sep1.views import PolarisPlainTextRenderer, generate_toml
@@ -20,14 +27,21 @@ from core.polaris.sep10.views import SEP10Auth
 
 from stellar_sdk import Keypair
 from stellar_sdk.client.requests_client import RequestsClient
-from stellar_sdk.sep.stellar_toml import fetch_stellar_toml
 from stellar_sdk.operation import ManageData
-
+from stellar_sdk.sep.stellar_toml import fetch_stellar_toml
 from stellar_sdk.sep.exceptions import (
     InvalidSep10ChallengeError,
     StellarTomlNotFoundError,
 )
-from .stellar_web_authentication import (
+from stellar_sdk.exceptions import (
+    NotFoundError,
+    ConnectionError,
+    Ed25519PublicKeyInvalidError,
+)
+from core.polaris import settings
+from core.polaris.utils import getLogger, render_error_response
+
+from core.testing.stellar_web_authentication import (
     build_challenge_transaction,
     read_challenge_transaction,
     verify_challenge_transaction_threshold,
@@ -85,15 +99,34 @@ def generate_toml(generate_toml):
     if "sep-31" in settings.ACTIVE_SEPS:
         toml_dict2["DIRECT_PAYMENT_SERVER"] = os.path.join(settings.HOST_URL, "sep31")
 
-    toml_dict3 = {
-        "CURRENCIES": [
-            {"code": asset.code, "issuer": asset.issuer,
-            "status": "test", "is_asset_anchored": False,
-            "anchor_asset_type": "fiat",
-            "desc": "Cross border remittance anchor that uses USDC as a medium of exchange."}
-            for asset in Asset.objects.all().iterator()
-        ],
-    }
+    currencies = []
+    for asset in Asset.objects.all().iterator():
+        if asset.code == "USDC":
+            currencies1 = {
+                "code": asset.code, "issuer": asset.issuer,
+                "status": "test", "is_asset_anchored": True,
+                "anchor_asset_type": "fiat", "anchor_asset": "USD", "name": "USD Coin",
+                "redemption_instructions": "Redeemable through a Alfred-pay account at https://alfredpay.io",
+                "desc": "Cross border remittance anchor that uses USDC as a medium of exchange."
+                }
+            currencies.append(currencies1)
+        elif asset.code == "PODC":
+            currencies1b = {
+                "code": asset.code, "issuer": asset.issuer,
+                "status": "test", "is_asset_anchored": True,
+                "anchor_asset_type": "fiat", "anchor_asset": "POD", "name": "POD Coin",
+                "redemption_instructions": "Redeemable through a Alfred-pay account at https://alfredpay.io",
+                "desc": "Cross border remittance anchor that uses PODC as a medium of exchange."
+                }
+            currencies.append(currencies1b)
+        else:
+            currencies2 = {"code": asset.code, "issuer": asset.issuer,
+                "status": "test", "is_asset_anchored": False}
+            currencies.append(currencies2)
+    toml_dict3 = {}
+    toml_dict3["CURRENCIES"] = []
+    toml_dict3.update({"CURRENCIES":currencies})
+
     content = toml.dumps(toml_dict1) + "\n" + toml.dumps(toml_dict2) + "\n" + toml.dumps(toml_dict3)
 
     return Response(content, content_type="text/plain")

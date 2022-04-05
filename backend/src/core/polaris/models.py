@@ -20,7 +20,7 @@ from django.utils.encoding import force_bytes
 from django.utils.translation import gettext_lazy as _
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
-from stellar_sdk import Server
+from stellar_sdk.server_async import ServerAsync
 from stellar_sdk.client.aiohttp_client import AiohttpClient
 from stellar_sdk.exceptions import SdkError
 from stellar_sdk.keypair import Keypair
@@ -34,6 +34,28 @@ ASSET_DISTRIBUTION_ACCOUNT_MAP = {}
 
 def utc_now():
     return datetime.datetime.now(datetime.timezone.utc)
+
+
+class PolarisHeartbeat(models.Model):
+    """
+    Used as a locking mechanism to ensure that certain processes such as
+    process_pending_deposits.py don't have more than 1 instance running
+    at any given time. The last_heatbeat is a timestamp that is periodically
+    updated by the process. If a process unexpectedly dies, another instance
+    can check this value at startup and if its been too long since the last
+    update, the lock is considered 'expired' and the new process can acquire
+    it. This mechanism is an advisory lock and the locking logic is implemented
+    at the application level.
+    This value can also be used to create a 'health check' endpoint for the
+    application
+    Note: The application is expected to delete this key during a gracefully
+    shutdown - see process_pending_deposits.py for an example
+    """
+
+    key = models.CharField(max_length=80, unique=True)
+    last_heartbeat = models.DateTimeField(null=True, blank=True)
+
+    objects = models.Manager()
 
 
 class PolarisChoices(Choices):
@@ -95,7 +117,8 @@ class EncryptedTextField(models.TextField):
 
 
 class Asset(TimeStampedModel):
-    code = models.CharField(max_length=255)
+    # code = models.CharField(max_length=255)
+    code = models.TextField()
     """The asset code as defined on the Stellar network."""
 
     issuer = models.TextField(validators=[MinLengthValidator(56)])
@@ -260,7 +283,7 @@ class Asset(TimeStampedModel):
         else:
             return ASSET_DISTRIBUTION_ACCOUNT_MAP[self.distribution_account]
 
-    def get_distributiion_account_signers(self, refresh=False):
+    def get_distribution_account_signers(self, refresh=False):
         if refresh or self.distribution_account not in ASSET_DISTRIBUTION_ACCOUNT_MAP:
             account_json = self.get_distribution_account_data(refresh=refresh)
         else:
@@ -287,7 +310,9 @@ class Asset(TimeStampedModel):
 
     async def get_distribution_account_data_async(self, refresh=False):
         if refresh or self.distribution_account not in ASSET_DISTRIBUTION_ACCOUNT_MAP:
-            async with Server(settings.HORIZON_URI, client=AiohttpClient()) as server:
+            async with ServerAsync(
+                settings.HORIZON_URI, client=AiohttpClient()
+            ) as server:
                 account_json = (
                     await server.accounts().account_id(self.distribution_account).call()
                 )
@@ -380,6 +405,63 @@ class Transaction(models.Model):
         "pending_stellar": _("stellar is executing the transaction"),
     }
 
+    SUBMISSION_STATUS = PolarisChoices(
+        "not_ready",
+        "ready",
+        "processing",
+        "pending",
+        "pending_funding",
+        "pending_trust",
+        "blocked",
+        "unblocked",
+        "completed",
+        "failed",
+    )
+    """
+        Submission Statuses
+
+    * **not_ready**
+        used until a transaction is returned from RailsIntegration.poll_pending_deposits()
+        and determined by check_account to be ready for submission to the Stellar Network
+
+    * **ready**
+        used when the transaction has been processed by the check_account task and verified
+        that the transaction is ready to be submitted to the Stellar Network
+
+    * **processing**
+        used when Polaris is submitting the transaction to Stellar. Note that up to two
+        transactions could be submitted for this Transaction object, one for creating the
+        account if it doesn't exist, and the other for sending the deposit payment.
+
+    * **pending**
+        used when the transaction has been passed to
+        CustodyIntegration.create_destination_account() or
+        CustodyIntegration.submit_deposit_transaction() but a `TransactionSubmissionPending`
+        exception was raised in the most-recent invocation, and a SIGINT or SIGTERM was
+        sent, preventing Polaris from submitting again.
+
+    * **pending_trust**
+        used when the transaction destination account does not yet have a trustline
+
+    * **blocked**
+        used when the transaction has been passed to
+        CustodyIntegration.create_destination_account()
+        or CustodyIntegration.submit_deposit_transaction() but a `TransactionSubmissionBlocked`
+        exception was raised in the most-recent invocation. Polaris will simply move to the
+        next transaction.
+
+    * **unblocked**
+        Similar to READY, but indicates that the transaction was previously blocked.
+
+    * **completed**
+        used when a transaction has been successfully submitted to the Stellar network
+
+    * **failed**
+        used when a transaction has been passed to
+        CustodyIntegration.submit_deposit_transaction() but a `TransactionSubmissionFailed`
+        exception was raised
+    """
+
     STATUS = PolarisChoices(*list(status_to_message.keys()))
 
     MEMO_TYPES = PolarisChoices("text", "id", "hash")
@@ -423,6 +505,10 @@ class Transaction(models.Model):
     # These fields can be shown through an API:
     kind = models.CharField(choices=KIND, default=KIND.deposit, max_length=20)
     """The character field for the available ``KIND`` choices."""
+
+    submission_status = models.CharField(
+        choices=SUBMISSION_STATUS, default=SUBMISSION_STATUS.not_ready, max_length=31
+    )
 
     status = models.CharField(
         choices=STATUS, default=STATUS.pending_external, max_length=31
@@ -564,6 +650,12 @@ class Transaction(models.Model):
     must be formatted using SEP-38's Asset Identification Format, and is only
     necessary for transactions using different on and off-chain assets.
     """
+
+    queue = models.TextField(null=True, blank=True)
+    """The queue that this transaction is currently in"""
+
+    queued_at = models.DateTimeField(null=True, blank=True)
+    """The time when this transaction was queued"""
 
     started_at = models.DateTimeField(default=utc_now)
     """Start date and time of transaction."""
@@ -711,12 +803,20 @@ class Transaction(models.Model):
 
 
 class Quote(models.Model):
+    """
+    Quote objects represent either firm or indicative quotes requested by the client
+    application and provided by the anchor. Quote objects will be assigned to the
+    Transaction.quote column by Polaris when requested via a SEP-6 or SEP-31 request.
+    Anchors must create their own Quote objects when facilitating a SEP-24 transaction.
+    """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     """
     The unique ID for the quote.
     """
 
-    stellar_account = models.CharField(max_length=255)
+    # stellar_account = models.CharField(max_length=255)
+    stellar_account = models.TextField()
     """
     The Stellar (G...) account authenticated via SEP-10 when this Quote was created.
     Note that if ``Quote.muxed_account`` is not null, this column's value is 
@@ -742,25 +842,28 @@ class Quote(models.Model):
     Choices for type.
     """
 
-    type = models.CharField(max_length=80, choices=TYPE)
+    # type = models.CharField(max_length=80, choices=TYPE)
+    type = models.TextField(choices=TYPE)
     """
     The type of quote. Firm quotes have a non-null price and expiration, indicative quotes 
     may have a null price and expiration.
     """
 
-    sell_asset = models.CharField(max_length=255)
+    # sell_asset = models.CharField(max_length=255)
+    sell_asset = models.TextField()
     """
     The asset the client would like to sell. Ex. USDC:G..., iso4217:ARS
     """
 
-    buy_asset = models.CharField(max_length=255)
+    # buy_asset = models.CharField(max_length=255)
+    buy_asset = models.TextField()
     """
     The asset the client would like to receive for some amount of sell_asset.
     """
 
     sell_amount = models.DecimalField(max_digits=30, decimal_places=7)
     """
-    The amount of sell_asset the client would exchange for |.
+    The amount of sell_asset the client would exchange for buy_asset.
     """
 
     buy_amount = models.DecimalField(
@@ -816,12 +919,19 @@ class Quote(models.Model):
 
 
 class OffChainAsset(models.Model):
-    scheme = models.CharField(max_length=255)
+    """
+    Off-chain assets represent the asset being exchanged with the Stellar asset. Each
+    off-chain asset has a set of delivery methods by which the user can provide funds to
+    the anchor and by which the anchor can deliver funds to the user.
+    """
+    # scheme = models.CharField(max_length=255)
+    scheme = models.TextField()
     """
     The scheme of the off-chain asset as defined by SEP-38's Asset Identification Format.
     """
 
-    identifier = models.CharField(max_length=255)
+    # identifier = models.CharField(max_length=255)
+    identifier = models.TextField()
     """
     The identifier of the off-chain asset as defined by SEP-38's Asset Identification Format.
     """
@@ -862,23 +972,34 @@ class OffChainAsset(models.Model):
 
 
 class DeliveryMethod(models.Model):
+    """
+    Delivery methods are the supported means of payment from the user to the anchor and from
+    the anchor to the user. For example, an anchor may have retail stores that accept cash
+    drop-off and pick-up, or only accept debit or credit card payments. The method used by
+    the anchor to collect or deliver funds to the user may affect the rate or fees charged
+    for facilitating the transaction.
+    """
+
     TYPE = PolarisChoices("buy", "sell")
     """
     The types of delivery methods.
     """
 
-    type = models.CharField(max_length=80, choices=TYPE)
+    # type = models.CharField(max_length=80, choices=TYPE)
+    type = models.TextField(choices=TYPE)
     """
     The type of delivery method. Sell methods describe how a client can deliver funds to the 
     anchor. Buy methods describe how a client can receive or collect funds from the anchor.
     """
 
-    name = models.CharField(max_length=255)
+    # name = models.CharField(max_length=255)
+    name = models.TextField()
     """
     The name of the delivery method, to be used in SEP-38 request and response bodies.
     """
 
-    description = models.CharField(max_length=255)
+    # description = models.CharField(max_length=255)
+    description = models.TextField()
     """
     The human-readable description of the deliver method, to be used in SEP-38 
     response bodies.
@@ -895,13 +1016,23 @@ class DeliveryMethod(models.Model):
 
 
 class ExchangePair(models.Model):
-    buy_asset = models.CharField(max_length=255)
+    """
+    Exchange pairs consist of an off-chain and on-chain asset that can be exchanged.
+    Specifically, one of these assets can be sold by the client (sell_asset) and the
+    other is bought by the client (buy_asset). ExchangePairs cannot consist of two
+    off-chain assets or two on-chain assets. Note that two exchange pair objects must
+    be created if each asset can be bought or sold for the other.
+    """
+
+    # buy_asset = models.CharField(max_length=255)
+    buy_asset = models.TextField()
     """
     The asset the client can purchase with sell_asset using SEP-38's Asset 
     Identification Format.
     """
 
-    sell_asset = models.CharField(max_length=255)
+    # sell_asset = models.CharField(max_length=255)
+    sell_asset = models.TextField()
     """
     The asset the client can provide in exchange for buy_asset using SEP-38's
     Asset Identification Format.

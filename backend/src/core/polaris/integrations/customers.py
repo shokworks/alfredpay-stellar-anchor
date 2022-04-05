@@ -42,10 +42,7 @@ class CustomerIntegration:
         .. _ObjectDoesNotExist: https://docs.djangoproject.com/en/3.1/ref/exceptions/#objectdoesnotexist
 
         Return a dictionary matching the response schema outlined in `SEP-12 GET /customer`_
-        based on the `params` passed. The key-value pairs in `params` match the arguments
-        sent in the request with the exception of ``sep10_client_account``. This parameter
-        was added in preparation for a future change. For now, ``sep10_client_account`` will
-        always match ``account``.
+        based on the `params` passed.
 
         Raise a ``ValueError`` if the parameters are invalid, or raise an
         ObjectDoesNotExist_ exception if the customer specified via the ``id`` parameter
@@ -98,7 +95,7 @@ class CustomerIntegration:
 
         :param token: the ``SEP10Token`` object representing the authenticated session
         :param request: a ``rest_framework.request.Request`` instance
-        :param params: request parameters as described in SEP-12_
+        :param params: request parameters as described in SEP-12
         :raises: ValueError or ObjectDoesNotExist
         """
         raise NotImplementedError()
@@ -152,7 +149,7 @@ class CustomerIntegration:
 
         :param token: the ``SEP10Token`` object representing the authenticated session
         :param request: a ``rest_framework.request.Request`` instance
-        :param params: request parameters as described in SEP-12_
+        :param params: request parameters as described in SEP-12
         :raises: ValueError or django.core.exceptions.ObjectDoesNotExist
         """
         raise NotImplementedError()

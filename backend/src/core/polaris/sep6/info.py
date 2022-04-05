@@ -18,6 +18,7 @@ from core.polaris.integrations import (
 
 from core.testing.myintegrations.info_integration import registered_info_func
 
+
 logger = getLogger(__name__)
 
 
