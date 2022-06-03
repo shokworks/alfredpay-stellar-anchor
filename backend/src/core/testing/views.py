@@ -3,9 +3,12 @@ import jwt
 import toml
 from urllib.parse import urlparse
 
+from django.http import HttpResponseRedirect
 from django.contrib.staticfiles import finders
+from django.shortcuts import render
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext
+from django.views.generic import View
 
 from rest_framework import status
 from rest_framework.decorators import api_view, renderer_classes
@@ -306,3 +309,8 @@ class MySEP10Auth(SEP10Auth):
             f"Challenge verified using account signers: {[s.account_id for s in signers_found]}"
         )
         return client_domain, None
+
+
+class get_home(View):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'pruebas/plaid.html')
