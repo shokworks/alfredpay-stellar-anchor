@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Stellar-Anchor
 
 ## Install file
