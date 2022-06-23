@@ -16,10 +16,10 @@ from stellar_sdk import (
     MuxedAccount,
     TransactionEnvelope,
     CreateAccount,
+    CreateClaimableBalance,
 )
 from stellar_sdk.client.aiohttp_client import AiohttpClient
 from stellar_sdk.exceptions import ConnectionError
-from stellar_sdk.xdr import TransactionResult, OperationType
 from asgiref.sync import sync_to_async
 
 from core.polaris import settings
@@ -627,7 +627,8 @@ class ProcessPendingDeposits:
     ):
         if transaction_type == TransactionType.DEPOSIT:
             await cls.handle_successful_deposit(
-                transaction_json=transaction_json, transaction=transaction,
+                transaction_json=transaction_json,
+                transaction=transaction,
             )
         else:
             await cls.handle_successful_account_creation(
@@ -698,30 +699,24 @@ class ProcessPendingDeposits:
         """
         Pulls claimable balance ID from horizon responses if present
 
-        When called we decode and read the result_xdr from the horizon response.
-        If any of the operations is a createClaimableBalanceResult we
-        decode the Base64 representation of the balanceID xdr.
-        After the fact we encode the result to hex.
-
-        The hex representation of the balanceID is important because its the
-        representation required to query and claim claimableBalances.
+        The hex representation of the balanceID is important because it
+        is the representation required to query and claim claimableBalances.
 
         :param
             response: the response from horizon
 
         :return
-            hex representation of the balanceID
-            or
-            None (if no createClaimableBalanceResult operation is found)
+            hex representation of the balanceID or None
         """
-        result_xdr = response["result_xdr"]
-        balance_id_hex = None
-        for op_result in TransactionResult.from_xdr(result_xdr).result.results:
-            if op_result.tr.type == OperationType.CREATE_CLAIMABLE_BALANCE:
-                balance_id_hex = (
-                    op_result.tr.create_claimable_balance_result.balance_id.to_xdr_bytes().hex()
-                )
-        return balance_id_hex
+        envelope = TransactionEnvelope.from_xdr(
+            response["envelope_xdr"], settings.STELLAR_NETWORK_PASSPHRASE
+        )
+        balance_id = None
+        for idx, op in enumerate(envelope.transaction.operations):
+            if isinstance(op, CreateClaimableBalance):
+                balance_id = envelope.transaction.get_claimable_balance_id(idx)
+                break
+        return balance_id
 
     @classmethod
     def handle_error(cls, transaction, message):
@@ -829,15 +824,19 @@ class ProcessPendingDeposits:
     async def process_pending_deposits(  # pragma: no cover
         cls, task_interval: int, heartbeat_interval: int
     ):
-        loop = asyncio.get_running_loop()
         current_task = asyncio.current_task()
-        for signal_name in ("SIGTERM", "SIGINT"):
-            loop.add_signal_handler(
-                getattr(signal, signal_name),
-                lambda s=signal_name: asyncio.create_task(
-                    cls.exit_gracefully(s, current_task)
-                ),
-            )
+        signal.signal(
+            signal.SIGINT,
+            lambda signum, frame: asyncio.create_task(
+                cls.exit_gracefully(signum, frame, current_task)
+            ),
+        )
+        signal.signal(
+            signal.SIGTERM,
+            lambda signum, frame: asyncio.create_task(
+                cls.exit_gracefully(signum, frame, current_task)
+            ),
+        )
 
         queues = PolarisQueueAdapter([SUBMIT_TRANSACTION_QUEUE])
         await sync_to_async(queues.populate_queues)()
@@ -863,7 +862,7 @@ class ProcessPendingDeposits:
             logger.debug("caught root task CancelledError...")
 
     @classmethod
-    async def exit_gracefully(cls, signal_name, root_task):  # pragma: no cover
+    async def exit_gracefully(cls, signal_name, frame, root_task):  # pragma: no cover
         logger.info(f"caught signal {signal_name}, cleaning up before exiting...")
         await sync_to_async(
             PolarisHeartbeat.objects.filter(
@@ -892,12 +891,12 @@ class Command(BaseCommand):
 
     A transaction is in the ``pending_user_transfer_start`` or ``pending_external`` status.
         Polaris passes these transaction the
-        :meth:`~polaris.integrations.RailsIntegration.poll_pending_deposits` integration
-        function, and the anchor is expected to return :class:`~polaris.models.Transaction`
+        :meth:`~core.polaris.integrations.RailsIntegration.poll_pending_deposits` integration
+        function, and the anchor is expected to return :class:`~core.polaris.models.Transaction`
         objects whose funds have been received off-chain. Polaris then checks if each
         transaction is in one of the secenarios outlined below, and if not, submits the
         return transactions them to the Stellar network. See the
-        :meth:`~polaris.integrations.RailsIntegration.poll_pending_deposits()` integration
+        :meth:`~core.polaris.integrations.RailsIntegration.poll_pending_deposits()` integration
         function for more details.
 
     A transaction’s destination account does not have a trustline to the requested asset.
@@ -906,10 +905,10 @@ class Command(BaseCommand):
         to the Stellar Network.
 
     A transaction’s source account requires multiple signatures before submission to the network.
-        In this case, :attr:`~polaris.models.Transaction.pending_signatures` is set to ``True``
+        In this case, :attr:`~core.polaris.models.Transaction.pending_signatures` is set to ``True``
         and the anchor is expected to collect signatures, save the transaction envelope to
-        :attr:`~polaris.models.Transaction.envelope_xdr`, and set
-        :attr:`~polaris.models.Transaction.pending_signatures` back to ``False``. Polaris will
+        :attr:`~core.polaris.models.Transaction.envelope_xdr`, and set
+        :attr:`~core.polaris.models.Transaction.pending_signatures` back to ``False``. Polaris will
         then query for these transactions and submit them to the Stellar network.
 
     **Optional arguments:**

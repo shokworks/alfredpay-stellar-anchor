@@ -3,8 +3,8 @@ import json
 import codecs
 import uuid
 from datetime import datetime, timezone
+from logging import getLogger
 from typing import Optional, Union, Tuple, Dict
-from logging import getLogger as get_logger, LoggerAdapter
 from decimal import Decimal
 
 import aiohttp
@@ -33,20 +33,11 @@ from stellar_sdk import Memo
 from requests import Response as RequestsResponse, RequestException, post
 from aiohttp import ClientResponse
 
-from core.polaris import settings
-from core.polaris.models import Transaction, Asset, Quote, OffChainAsset, ExchangePair
-from core.polaris.sep10.token import SEP10Token
-from core.polaris.sep38.utils import asset_id_to_kwargs
-from core.polaris.shared.serializers import TransactionSerializer
-
-
-class PolarisLoggerAdapter(LoggerAdapter):
-    def process(self, msg, kwargs):
-        return f"{self.extra['python_path']}: {msg}", kwargs
-
-
-def getLogger(name):
-    return PolarisLoggerAdapter(get_logger(name), extra={"python_path": name})
+from polaris import settings
+from polaris.models import Transaction, Asset, Quote, OffChainAsset, ExchangePair
+from polaris.sep10.token import SEP10Token
+from polaris.sep38.utils import asset_id_to_kwargs
+from polaris.shared.serializers import TransactionSerializer
 
 
 logger = getLogger(__name__)
@@ -55,19 +46,15 @@ logger = getLogger(__name__)
 def render_error_response(
     description: str,
     status_code: int = status.HTTP_400_BAD_REQUEST,
-    content_type: str = "application/json",
+    as_html: bool = False,
 ) -> Response:
     """
     Renders an error response in Django.
 
     Currently supports HTML or JSON responses.
     """
-    resp_data = {
-        "data": {"error": description},
-        "status": status_code,
-        "content_type": content_type,
-    }
-    if content_type == "text/html":
+    resp_data = {"data": {"error": description}, "status": status_code}
+    if as_html:
         resp_data["data"]["status_code"] = str(status_code)
         resp_data["template_name"] = "polaris/error.html"
     return Response(**resp_data)
@@ -97,7 +84,7 @@ def create_transaction_id():
 
 
 def verify_valid_asset_operation(
-    asset, amount, op_type, content_type="application/json"
+    asset, amount, op_type, as_html=False
 ) -> Optional[Response]:
     enabled = getattr(asset, f"{op_type}_enabled")
     min_amount = getattr(asset, f"{op_type}_min_amount")
@@ -105,7 +92,7 @@ def verify_valid_asset_operation(
     if not enabled:
         return render_error_response(
             gettext("the specified operation is not available for '%s'") % asset.code,
-            content_type=content_type,
+            as_html=as_html,
         )
     elif not (min_amount <= amount <= max_amount):
         return render_error_response(
@@ -114,7 +101,7 @@ def verify_valid_asset_operation(
                 "min": round(min_amount, asset.significant_decimals),
                 "max": round(max_amount, asset.significant_decimals),
             },
-            content_type=content_type,
+            as_html=as_html,
         )
 
 

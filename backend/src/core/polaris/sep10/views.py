@@ -19,8 +19,7 @@ from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from stellar_sdk.operation import ManageData
 from stellar_sdk.sep.stellar_toml import fetch_stellar_toml
-# from stellar_sdk.sep.stellar_web_authentication import (
-from core.testing.stellar_web_authentication import (
+from stellar_sdk.sep.stellar_web_authentication import (
     build_challenge_transaction,
     read_challenge_transaction,
     verify_challenge_transaction_threshold,
@@ -299,7 +298,7 @@ class SEP10Auth(APIView):
         # set iat value to minimum timebound of the challenge so that the JWT returned
         # for a given challenge is always the same.
         # https://github.com/stellar/stellar-protocol/pull/982
-        issued_at = challenge.transaction.transaction.time_bounds.min_time
+        issued_at = challenge.transaction.transaction.preconditions.time_bounds.min_time
 
         # format sub value based on muxed account or memo
         if challenge.client_account_id.startswith("M") or not challenge.memo:

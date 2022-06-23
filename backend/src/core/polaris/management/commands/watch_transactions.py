@@ -9,6 +9,7 @@ from django.db.models import Q
 from stellar_sdk.exceptions import NotFoundError
 from stellar_sdk.transaction import Transaction as HorizonTransaction
 from stellar_sdk.transaction_envelope import TransactionEnvelope
+from stellar_sdk.utils import from_xdr_amount
 from stellar_sdk.xdr import (
     PaymentResult,
     PathPaymentStrictSendResult,
@@ -16,7 +17,6 @@ from stellar_sdk.xdr import (
     OperationResult,
     TransactionResult,
 )
-from stellar_sdk.xdr.utils import from_xdr_amount
 from stellar_sdk.operation import (
     Operation,
     Payment,
@@ -144,7 +144,8 @@ class Command(BaseCommand):
         )
         # Query filters for SEP31
         send_filters = Q(
-            status=Transaction.STATUS.pending_sender, kind=Transaction.KIND.send,
+            status=Transaction.STATUS.pending_sender,
+            kind=Transaction.KIND.send,
         )
         transactions = await sync_to_async(list)(
             Transaction.objects.filter(
@@ -173,7 +174,8 @@ class Command(BaseCommand):
 
         op_results = TransactionResult.from_xdr(result_xdr).result.results
         horizon_tx = TransactionEnvelope.from_xdr(
-            envelope_xdr, network_passphrase=settings.STELLAR_NETWORK_PASSPHRASE,
+            envelope_xdr,
+            network_passphrase=settings.STELLAR_NETWORK_PASSPHRASE,
         ).transaction
 
         payment_data = await cls._find_matching_payment_data(
@@ -187,7 +189,8 @@ class Command(BaseCommand):
         # transaction. This allows anchors to validate the actual amount sent in
         # execute_outgoing_transactions() and handle invalid amounts appropriately.
         transaction.amount_in = round(
-            Decimal(payment_data["amount"]), transaction.asset.significant_decimals,
+            Decimal(payment_data["amount"]),
+            transaction.asset.significant_decimals,
         )
 
         # The stellar transaction has been matched with an existing record in the DB.
@@ -201,7 +204,7 @@ class Command(BaseCommand):
             transaction.status = Transaction.STATUS.pending_anchor
             await sync_to_async(transaction.save)()
         await maybe_make_callback_async(transaction)
-        return
+        return None
 
     @classmethod
     async def _find_matching_payment_data(

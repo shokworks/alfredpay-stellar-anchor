@@ -272,8 +272,11 @@ class SelfCustodyIntegration(CustodyIntegration):
                             transaction, has_trustline, server
                         )
                     else:
-                        envelope_obj = self._generate_create_account_transaction_envelope(
-                            transaction, server,
+                        envelope_obj = (
+                            self._generate_create_account_transaction_envelope(
+                                transaction,
+                                server,
+                            )
                         )
                     envelope = self._sign_and_save_transaction_envelope(
                         transaction, envelope_obj, [transaction.asset.distribution_seed]
@@ -405,7 +408,7 @@ class SelfCustodyIntegration(CustodyIntegration):
 
         NOTE: Polaris will drop support for multisig transactions in v3.0.
         """
-        from polaris.integrations import registered_deposit_integration as rdi
+        from core.polaris.integrations import registered_deposit_integration as rdi
 
         if not transaction.channel_account:
             # we haven't called this yet

@@ -31,12 +31,12 @@ def more_info(request: Request, sep6: bool = False) -> Response:
     try:
         transaction = _get_transaction_from_request(request, sep6=sep6)
     except (AttributeError, ValidationError) as exc:
-        return render_error_response(str(exc), content_type="text/html")
+        return render_error_response(str(exc), as_html=True)
     except ObjectDoesNotExist:
         return render_error_response(
             _("transaction not found"),
             status_code=status.HTTP_404_NOT_FOUND,
-            content_type="text/html",
+            as_html=True,
         )
 
     current_offset = get_timezone_utc_offset(
@@ -150,7 +150,9 @@ def more_info(request: Request, sep6: bool = False) -> Response:
     try:
         content_from_anchor = (
             integration_class.content_for_template(
-                request=request, template=Template.MORE_INFO, transaction=transaction,
+                request=request,
+                template=Template.MORE_INFO,
+                transaction=transaction,
             )
             or {}
         )
@@ -169,7 +171,7 @@ def more_info(request: Request, sep6: bool = False) -> Response:
     return Response(
         context,
         template_name=content_from_anchor.get(
-            "template_name", "polaris/more_info.html"
+            "template_name", "core.polaris/more_info.html"
         ),
     )
 
@@ -202,7 +204,9 @@ def calc_amount_out_with_price_inversion(
 
 
 def transactions_request(
-    request: Request, token: SEP10Token, sep6: bool = False,
+    request: Request,
+    token: SEP10Token,
+    sep6: bool = False,
 ) -> Response:
     try:
         limit = _validate_limit(request.GET.get("limit"))
@@ -258,11 +262,15 @@ def transactions_request(
 
 
 def transaction_request(
-    request: Request, token: SEP10Token, sep6: bool = False,
+    request: Request,
+    token: SEP10Token,
+    sep6: bool = False,
 ) -> Response:
     try:
         request_transaction = _get_transaction_from_request(
-            request, token=token, sep6=sep6,
+            request,
+            token=token,
+            sep6=sep6,
         )
     except (AttributeError, ValidationError) as exc:
         return render_error_response(str(exc), status_code=status.HTTP_400_BAD_REQUEST)
@@ -271,7 +279,8 @@ def transaction_request(
             "transaction not found", status_code=status.HTTP_404_NOT_FOUND
         )
     serializer = TransactionSerializer(
-        request_transaction, context={"request": request, "sep6": sep6},
+        request_transaction,
+        context={"request": request, "sep6": sep6},
     )
     return Response({"transaction": serializer.data})
 
@@ -359,7 +368,9 @@ def _compute_qset_filters(req_params, translation_dict):
 
 
 def _get_transaction_from_request(
-    request, token: SEP10Token = None, sep6: bool = False,
+    request,
+    token: SEP10Token = None,
+    sep6: bool = False,
 ):
     translation_dict = {
         "id": "id",

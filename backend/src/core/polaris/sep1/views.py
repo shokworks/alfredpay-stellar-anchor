@@ -51,9 +51,9 @@ def generate_toml(request: Request) -> Response:
         # integration function is not used, check to see if a static file is defined
         static_toml = None
         if settings.LOCAL_MODE:
-            static_toml = finders.find("polaris/local-stellar.toml")
+            static_toml = finders.find("core.polaris/local-stellar.toml")
         if not static_toml:
-            static_toml = finders.find("polaris/stellar.toml")
+            static_toml = finders.find("core.polaris/stellar.toml")
         if static_toml:
             with open(static_toml) as f:
                 return Response(f.read(), content_type="text/plain")
@@ -83,7 +83,7 @@ def generate_toml(request: Request) -> Response:
     if "sep-31" in settings.ACTIVE_SEPS:
         toml_dict["DIRECT_PAYMENT_SERVER"] = os.path.join(settings.HOST_URL, "sep31")
     if "sep-38" in settings.ACTIVE_SEPS:
-        toml_dict["QUOTE_SERVER"] = os.path.join(settings.HOST_URL, "sep38")
+        toml_dict["ANCHOR_QUOTE_SERVER"] = os.path.join(settings.HOST_URL, "sep38")
 
     toml_dict.update(registered_toml_func(request))
     content = toml.dumps(toml_dict)

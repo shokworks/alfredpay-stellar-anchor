@@ -65,7 +65,7 @@ class PolarisChoices(Choices):
         return str(Choices)
 
 
-class EncryptedTextField(models.TextField):
+class EncryptedTextField(models.CharField):
     """
     A custom field for ensuring its data is always encrypted at the DB
     layer and only decrypted by this object when in memory.
@@ -120,7 +120,7 @@ class Asset(TimeStampedModel):
     code = models.CharField(max_length=255)
     """The asset code as defined on the Stellar network."""
 
-    issuer = models.TextField(validators=[MinLengthValidator(56)])
+    issuer = models.CharField(validators=[MinLengthValidator(56)])
     """The issuing Stellar account address."""
 
     significant_decimals = models.IntegerField(
@@ -136,8 +136,8 @@ class Asset(TimeStampedModel):
         null=True, blank=True, max_digits=30, decimal_places=7
     )
     """
-    Optional fixed (base) fee for deposit. In units of the deposited asset. 
-    This is in addition to any ``fee_percent``. Omit if there is no fee or the fee 
+    Optional fixed (base) fee for deposit. In units of the deposited asset.
+    This is in addition to any ``fee_percent``. Omit if there is no fee or the fee
     schedule is complex.
     """
 
@@ -149,7 +149,7 @@ class Asset(TimeStampedModel):
         validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
     """
-    Optional percentage fee for deposit. In percentage points. This is in 
+    Optional percentage fee for deposit. In percentage points. This is in
     addition to any ``fee_fixed``. Omit if there is no fee or the fee schedule
     is complex.
     """
@@ -172,7 +172,7 @@ class Asset(TimeStampedModel):
         null=True, blank=True, max_digits=30, decimal_places=7
     )
     """
-    Optional fixed (base) fee for withdraw. In units of the withdrawn asset. 
+    Optional fixed (base) fee for withdraw. In units of the withdrawn asset.
     This is in addition to any ``fee_percent``.
     """
 
@@ -184,7 +184,7 @@ class Asset(TimeStampedModel):
         validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
     """
-    Optional percentage fee for withdraw in percentage points. This is in 
+    Optional percentage fee for withdraw in percentage points. This is in
     addition to any ``fee_fixed``.
     """
 
@@ -202,7 +202,7 @@ class Asset(TimeStampedModel):
         null=True, blank=True, max_digits=30, decimal_places=7
     )
     """
-    Optional fixed (base) fee for sending this asset in units of this asset. 
+    Optional fixed (base) fee for sending this asset in units of this asset.
     This is in addition to any ``send_fee_percent``. If null, ``fee_fixed`` will not
     be displayed in SEP31 /info response.
     """
@@ -215,7 +215,7 @@ class Asset(TimeStampedModel):
         validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
     """
-    Optional percentage fee for sending this asset in percentage points. This is in 
+    Optional percentage fee for sending this asset in percentage points. This is in
     addition to any ``send_fee_fixed``. If null, ``fee_percent`` will not be displayed
     in SEP31 /info response.
     """
@@ -249,7 +249,7 @@ class Asset(TimeStampedModel):
     sep38_enabled = models.BooleanField(default=False)
     """`True` if this asset is exchangeable via SEP-38"""
 
-    symbol = models.TextField(default="$")
+    symbol = models.CharField(default="$")
     """The symbol used in HTML pages when displaying amounts of this asset"""
 
     objects = models.Manager()
@@ -364,7 +364,7 @@ def deserialize(value):
     """
     Validation function for Transaction.envelope_xdr
     """
-    from polaris import settings
+    from core.polaris import settings
 
     try:
         TransactionEnvelope.from_xdr(value, settings.STELLAR_NETWORK_PASSPHRASE)
@@ -472,17 +472,17 @@ class Transaction(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     """Unique, anchor-generated id for the deposit/withdrawal."""
 
-    paging_token = models.TextField(null=True, blank=True)
+    paging_token = models.CharField(null=True, blank=True)
     """The token to be used as a cursor for querying before or after this transaction"""
 
-    stellar_account = models.TextField(validators=[MinLengthValidator(1)])
+    stellar_account = models.CharField(validators=[MinLengthValidator(1)])
     """
     The Stellar (G...) account authenticated via SEP-10 that initiated this transaction.
-    Note that if ``Transaction.muxed_account`` is not null, this column's value is 
+    Note that if ``Transaction.muxed_account`` is not null, this column's value is
     derived from the muxed account.
     """
 
-    muxed_account = models.TextField(null=True, blank=True)
+    muxed_account = models.CharField(null=True, blank=True)
     """
     The muxed (M...) account authenticated via SEP-10 that initiated this transaction.
     If this column value is not null, ``Transaction.stellar_account`` is derived from
@@ -491,7 +491,7 @@ class Transaction(models.Model):
 
     account_memo = models.PositiveIntegerField(null=True, blank=True)
     """
-    The ID (64-bit integer) memo identifying the user of the shared Stellar account 
+    The ID (64-bit integer) memo identifying the user of the shared Stellar account
     authenticated via SEP-10 that initiated this transaction. If this column value
     is not null, ``Transaction.muxed_account`` will be null.
     """
@@ -514,98 +514,98 @@ class Transaction(models.Model):
     )
     """
     Choices field for processing status of deposit, withdrawal, & send.
-    
+
     SEP-6 & SEP-24 Statuses:
 
     * **completed**
-        
+
         deposit/withdrawal fully completed
     * **pending_external**
-    
-        deposit/withdrawal has been submitted to external 
-        network, but is not yet confirmed. This is the status when waiting on 
-        Bitcoin or other external crypto network to complete a transaction, or 
+
+        deposit/withdrawal has been submitted to external
+        network, but is not yet confirmed. This is the status when waiting on
+        Bitcoin or other external crypto network to complete a transaction, or
         when waiting on a bank transfer.
     * **pending_anchor**
-    
+
         deposit/withdrawal is being processed internally by anchor.
     * **pending_stellar**
-    
-        deposit/withdrawal operation has been submitted to Stellar network, but 
+
+        deposit/withdrawal operation has been submitted to Stellar network, but
         is not yet confirmed.
     * **pending_trust**
-    
+
         the user must add a trust-line for the asset for the deposit to complete.
     * **pending_user**
-    
-        the user must take additional action before the deposit / withdrawal can 
+
+        the user must take additional action before the deposit / withdrawal can
         complete.
     * **pending_user_transfer_start**
-    
-        the user has not yet initiated their transfer to the anchor. This is the 
+
+        the user has not yet initiated their transfer to the anchor. This is the
         necessary first step in any deposit or withdrawal flow.
 
     * **incomplete**
-    
-        there is not yet enough information for this transaction to be initiated. 
+
+        there is not yet enough information for this transaction to be initiated.
         Perhaps the user has not yet entered necessary info in an interactive flow.
     * **no_market**
-    
-        could not complete deposit because no satisfactory asset/XLM market 
+
+        could not complete deposit because no satisfactory asset/XLM market
         was available to create the account.
     * **too_small**
-    
+
         deposit/withdrawal size less than min_amount.
     * **too_large**
-    
+
         deposit/withdrawal size exceeded max_amount.
     * **error**
-    
+
         catch-all for any error not enumerated above.
-        
+
     SEP-31 Statuses:
-    
+
     * **pending_sender**
-    
+
         awaiting payment to be initiated by sending anchor.
     * **pending_stellar**
-    
+
         transaction has been submitted to Stellar network, but is not yet confirmed.
     * **pending_transaction_info_update**
-    
+
         transaction details must be updated to successfully execute transaction off-chain
     * **pending_customer_info_update**
-    
+
         customer (SEP-12) information must be updated to facilitate transactions
     * **pending_receiver**
-    
+
         payment is being processed by the receiving anchor.
     * **pending_external**
-    
+
         payment has been submitted to external network, but is not yet confirmed.
     * **completed**
-    
+
         deposit/withdrawal fully completed.
     * **error**
-    
+
         catch-all for any error not enumerated above.
     """
 
     status_eta = models.IntegerField(null=True, blank=True)
     """(optional) Estimated number of seconds until a status change is expected."""
 
-    status_message = models.TextField(null=True, blank=True)
+    status_message = models.CharField(null=True, blank=True)
     """A message stored in association to the current status for debugging"""
 
-    stellar_transaction_id = models.TextField(null=True, blank=True)
+    stellar_transaction_id = models.CharField(null=True, blank=True)
     """
     transaction_id on Stellar network of the transfer that either completed
     the deposit or started the withdrawal.
     """
 
-    external_transaction_id = models.TextField(null=True, blank=True)
+    external_transaction_id = models.CharField(null=True, blank=True)
     """
-    (optional) ID of transaction on external network that either started 
+    (optional) ID of transaction on external network that either started
     the deposit or completed the withdrawal.
     """
 
@@ -613,8 +613,8 @@ class Transaction(models.Model):
         null=True, blank=True, max_digits=30, decimal_places=7
     )
     """
-    Amount received by anchor at start of transaction as a string with up 
-    to 7 decimals. Excludes any fees charged before the anchor received the 
+    Amount received by anchor at start of transaction as a string with up
+    to 7 decimals. Excludes any fees charged before the anchor received the
     funds.
     """
 
@@ -623,7 +623,7 @@ class Transaction(models.Model):
     )
     """
     Amount the client specified would be sent to the anchor at the start of
-    a transaction. Note that ``Transaction.amount_in`` can differ from this field 
+    a transaction. Note that ``Transaction.amount_in`` can differ from this field
     after funds have been received. Until then, the fields will match. This field
     makes it possible to check if the amount sent to the anchor matches the amount
     the client initially specified in an API request or form.
@@ -634,7 +634,7 @@ class Transaction(models.Model):
     )
     """
     Amount sent by anchor to user at end of transaction as a string with up to
-    7 decimals. Excludes amount converted to XLM to fund account and any 
+    7 decimals. Excludes amount converted to XLM to fund account and any
     external fees.
     """
 
@@ -643,14 +643,14 @@ class Transaction(models.Model):
     )
     """Amount of fee charged by anchor."""
 
-    fee_asset = models.TextField(null=True, blank=True)
+    fee_asset = models.CharField(null=True, blank=True)
     """
     The string representing the asset in which the fee is charged. The string
     must be formatted using SEP-38's Asset Identification Format, and is only
     necessary for transactions using different on and off-chain assets.
     """
 
-    queue = models.TextField(null=True, blank=True)
+    queue = models.CharField(null=True, blank=True)
     """The queue that this transaction is currently in"""
 
     queued_at = models.DateTimeField(null=True, blank=True)
@@ -661,36 +661,36 @@ class Transaction(models.Model):
 
     completed_at = models.DateTimeField(null=True, blank=True)
     """
-    Completion date and time of transaction. Assigned null for in-progress 
+    Completion date and time of transaction. Assigned null for in-progress
     transactions.
     """
 
-    from_address = models.TextField(
+    from_address = models.CharField(
         null=True, blank=True
     )  # Using from_address since `from` is a reserved keyword
     """Sent from address, perhaps BTC, IBAN, or bank account."""
 
-    to_address = models.TextField(
+    to_address = models.CharField(
         null=True, blank=True
     )  # Using to_address for naming consistency
     """
-    Sent to address (perhaps BTC, IBAN, or bank account in the case of a 
+    Sent to address (perhaps BTC, IBAN, or bank account in the case of a
     withdrawal or send, Stellar or muxed address in the case of a deposit).
     """
 
-    required_info_updates = models.TextField(null=True, blank=True)
+    required_info_updates = models.CharField(null=True, blank=True)
     """
-    (SEP31) (optional) A set of fields that require an update from the sender, 
+    (SEP31) (optional) A set of fields that require an update from the sender,
     in the same format as described in /info.
     """
 
-    required_info_message = models.TextField(null=True, blank=True)
+    required_info_message = models.CharField(null=True, blank=True)
     """
-    (SEP31) (optional) A human readable message indicating any errors that 
+    (SEP31) (optional) A human readable message indicating any errors that
     require updated information from the sender
     """
 
-    memo = models.TextField(null=True, blank=True)
+    memo = models.CharField(null=True, blank=True)
     """
     (optional) Value of memo to attach to transaction, for hash this should
     be base64-encoded.
@@ -700,11 +700,11 @@ class Transaction(models.Model):
         choices=MEMO_TYPES, default=MEMO_TYPES.text, max_length=10
     )
     """
-    (optional) Type of memo that anchor should attach to the Stellar payment 
+    (optional) Type of memo that anchor should attach to the Stellar payment
     transaction, one of text, id or hash.
     """
 
-    receiving_anchor_account = models.TextField(null=True, blank=True)
+    receiving_anchor_account = models.CharField(null=True, blank=True)
     """
     Stellar account to send payment or withdrawal funds to
     """
@@ -717,20 +717,20 @@ class Transaction(models.Model):
 
     pending_signatures = models.BooleanField(default=False)
     """
-    Boolean for whether or not non-Polaris signatures are needed for this 
+    Boolean for whether or not non-Polaris signatures are needed for this
     transaction's envelope.
     """
 
-    envelope_xdr = models.TextField(validators=[deserialize], null=True, blank=True)
+    envelope_xdr = models.CharField(validators=[deserialize], null=True, blank=True)
     """
-    The base64-encoded XDR blob that can be deserialized to inspect and sign 
+    The base64-encoded XDR blob that can be deserialized to inspect and sign
     the encoded transaction.
     """
 
     channel_seed = EncryptedTextField(null=True, blank=True)
     """
-    A keypair of the account used when sending SEP-6 or SEP-24 deposit 
-    transactions to Transaction.to_address, if present. 
+    A keypair of the account used when sending SEP-6 or SEP-24 deposit
+    transactions to Transaction.to_address, if present.
     This is only used for transactions requiring signatures Polaris cannot
     add itself.
     """
@@ -741,21 +741,21 @@ class Transaction(models.Model):
     requirements for handeling claimable balance deposits.
     """
 
-    claimable_balance_id = models.TextField(null=True, blank=True)
+    claimable_balance_id = models.CharField(null=True, blank=True)
     """
     The ID of the claimable balance used to send funds to the user. This column will be
     ``None`` if ``claimable_balance_supported`` is ``False`` or if the transaction has
     not yet been submitted to the Stellar network.
     """
 
-    more_info_url = models.TextField(null=True, blank=True)
+    more_info_url = models.CharField(null=True, blank=True)
     """
     A URL that is opened by wallets after the interactive flow is complete. It can include
     banking information for users to start deposits, the status of the transaction, or any
     other information the user might need to know about the transaction.
     """
 
-    on_change_callback = models.TextField(null=True, blank=True)
+    on_change_callback = models.CharField(null=True, blank=True)
     """
     A URL that the anchor should POST a JSON message to when the status property of the
     transaction created as a result of this request changes.
@@ -763,17 +763,17 @@ class Transaction(models.Model):
 
     pending_execution_attempt = models.BooleanField(default=False)
     """
-    An internal column used to ensure transactions are not retrieved from the database 
-    and executed by different processes running the same command, specifically 
+    An internal column used to ensure transactions are not retrieved from the database
+    and executed by different processes running the same command, specifically
     process_pending_deposits and execute_outgoing_transactions.
     """
 
-    client_domain = models.TextField(null=True, blank=True)
+    client_domain = models.CharField(null=True, blank=True)
     """
     The hostname of the client application that requested this transaction on behalf of
-    the user. The SIGNING_KEY on `https://client_domain/.well-known/stellar.toml` signed 
-    the challenge transaction used to obtain the authentication token necessary to 
-    request this transaction, effectively allowing requests including the authentication 
+    the user. The SIGNING_KEY on `https://client_domain/.well-known/stellar.toml` signed
+    the challenge transaction used to obtain the authentication token necessary to
+    request this transaction, effectively allowing requests including the authentication
     token to be attributed to it.
     """
 
@@ -817,18 +817,18 @@ class Quote(models.Model):
     stellar_account = models.CharField(max_length=255)
     """
     The Stellar (G...) account authenticated via SEP-10 when this Quote was created.
-    Note that if ``Quote.muxed_account`` is not null, this column's value is 
-    derived from the muxed account. 
+    Note that if ``Quote.muxed_account`` is not null, this column's value is
+    derived from the muxed account.
     """
 
     account_memo = models.PositiveIntegerField(null=True, blank=True)
     """
-    The ID (64-bit integer) memo identifying the user of the shared Stellar account 
+    The ID (64-bit integer) memo identifying the user of the shared Stellar account
     authenticated via SEP-10 when this Quote was created. If this column value
     is not null, ``Quote.muxed_account`` will be null.
     """
 
-    muxed_account = models.TextField(null=True, blank=True)
+    muxed_account = models.CharField(null=True, blank=True)
     """
     The muxed (M...) account authenticated via SEP-10 when this Quote was created.
     If this column value is not null, ``Quote.stellar_account`` is derived from
@@ -842,7 +842,7 @@ class Quote(models.Model):
 
     type = models.CharField(max_length=80, choices=TYPE)
     """
-    The type of quote. Firm quotes have a non-null price and expiration, indicative quotes 
+    The type of quote. Firm quotes have a non-null price and expiration, indicative quotes
     may have a null price and expiration.
     """
 
@@ -900,9 +900,9 @@ class Quote(models.Model):
     One of the name values specified by the buy_delivery_methods array.
     """
 
-    country_code = models.TextField(null=True, blank=True)
+    country_code = models.CharField(null=True, blank=True)
     """
-    The ISO 3166-1 alpha-3 code of the user's current address. 
+    The ISO 3166-1 alpha-3 code of the user's current address.
     """
 
     requested_expire_after = models.DateTimeField(null=True, blank=True)
@@ -919,6 +919,7 @@ class OffChainAsset(models.Model):
     off-chain asset has a set of delivery methods by which the user can provide funds to
     the anchor and by which the anchor can deliver funds to the user.
     """
+
     scheme = models.CharField(max_length=255)
     """
     The scheme of the off-chain asset as defined by SEP-38's Asset Identification Format.
@@ -934,9 +935,9 @@ class OffChainAsset(models.Model):
     The number of decimal places Polaris should preserve when collecting & calculating amounts.
     """
 
-    country_codes = models.TextField(null=True, blank=True)
+    country_codes = models.CharField(null=True, blank=True)
     """
-    A comma-separated list of ISO 3166-1 alpha-3 codes of the countries where the anchor 
+    A comma-separated list of ISO 3166-1 alpha-3 codes of the countries where the anchor
     supports delivery of this asset.
     """
 
@@ -945,7 +946,7 @@ class OffChainAsset(models.Model):
     The list of delivery methods support for collecting and receiving this asset
     """
 
-    symbol = models.TextField(null=True, blank=True)
+    symbol = models.CharField(null=True, blank=True)
     """
     The symbol to use when displaying amounts of this asset
     """
@@ -980,7 +981,7 @@ class DeliveryMethod(models.Model):
 
     type = models.CharField(max_length=80, choices=TYPE)
     """
-    The type of delivery method. Sell methods describe how a client can deliver funds to the 
+    The type of delivery method. Sell methods describe how a client can deliver funds to the
     anchor. Buy methods describe how a client can receive or collect funds from the anchor.
     """
 
@@ -991,7 +992,7 @@ class DeliveryMethod(models.Model):
 
     description = models.CharField(max_length=255)
     """
-    The human-readable description of the deliver method, to be used in SEP-38 
+    The human-readable description of the deliver method, to be used in SEP-38
     response bodies.
     """
 
@@ -1016,7 +1017,7 @@ class ExchangePair(models.Model):
 
     buy_asset = models.CharField(max_length=255)
     """
-    The asset the client can purchase with sell_asset using SEP-38's Asset 
+    The asset the client can purchase with sell_asset using SEP-38's Asset
     Identification Format.
     """
 
