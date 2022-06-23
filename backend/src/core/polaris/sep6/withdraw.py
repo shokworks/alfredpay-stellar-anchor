@@ -18,26 +18,27 @@ from stellar_sdk.exceptions import (
     ValueError as StellarSdkValueError,
 )
 
-from polaris import settings
-from polaris.utils import (
+from core.polaris import settings
+from core.polaris.utils import (
     getLogger,
     render_error_response,
     create_transaction_id,
     extract_sep9_fields,
     make_memo,
-    memo_hex_to_base64,
     get_quote_and_offchain_destination_asset,
+    validate_account_and_memo,
 )
-from polaris.sep6.utils import validate_403_response
-from polaris.sep10.token import SEP10Token
-from polaris.sep10.utils import validate_sep10_token
-from polaris.shared.endpoints import SEP6_MORE_INFO_PATH
-from polaris.locale.utils import validate_language, activate_lang_for_request
-from polaris.models import Asset, Transaction, Quote
-from polaris.integrations import (
+from core.polaris.sep6.utils import validate_403_response
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.sep10.utils import validate_sep10_token
+from core.polaris.shared.endpoints import SEP6_MORE_INFO_PATH
+from core.polaris.locale.utils import validate_language, activate_lang_for_request
+from core.polaris.models import Asset, Transaction, Quote
+from core.polaris.integrations import (
     registered_withdrawal_integration as rwi,
     registered_fee_func,
     calculate_fee,
+    registered_custody_integration as rci,
 )
 
 logger = getLogger(__name__)
@@ -65,9 +66,6 @@ def withdraw_logic(token: SEP10Token, request: Request, exchange: bool):
         return args["error"]
 
     transaction_id = create_transaction_id()
-    transaction_id_hex = transaction_id.hex
-    padded_hex_memo = "0" * (64 - len(transaction_id_hex)) + transaction_id_hex
-    transaction_memo = memo_hex_to_base64(padded_hex_memo)
     transaction = Transaction(
         id=transaction_id,
         stellar_account=token.account,
@@ -81,11 +79,6 @@ def withdraw_logic(token: SEP10Token, request: Request, exchange: bool):
             Transaction.KIND, "withdrawal-exchange" if exchange else "withdrawal"
         ),
         status=Transaction.STATUS.pending_user_transfer_start,
-        receiving_anchor_account=args[
-            "source_asset" if exchange else "asset"
-        ].distribution_account,
-        memo=transaction_memo,
-        memo_type=Transaction.MEMO_TYPES.hash,
         protocol=Transaction.PROTOCOL.sep6,
         more_info_url=request.build_absolute_uri(
             f"{SEP6_MORE_INFO_PATH}?id={transaction_id}"
@@ -117,6 +110,22 @@ def withdraw_logic(token: SEP10Token, request: Request, exchange: bool):
         )
 
     if status_code == 200:
+        try:
+            receiving_account, memo_str, memo_type = validate_account_and_memo(
+                *rci.get_receiving_account_and_memo(
+                    request=request, transaction=transaction
+                )
+            )
+        except ValueError:
+            logger.exception(
+                "CustodyIntegration.get_receiving_account_and_memo() returned invalid values"
+            )
+            return render_error_response(
+                _("unable to process the request"), status_code=500
+            )
+        transaction.receiving_anchor_account = receiving_account
+        transaction.memo = memo_str
+        transaction.memo_type = memo_type
         response["memo"] = transaction.memo
         response["memo_type"] = transaction.memo_type
         logger.info(f"Created withdraw transaction {transaction.id}")

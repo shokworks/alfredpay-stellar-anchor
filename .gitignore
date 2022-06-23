@@ -139,19 +139,20 @@ dmypy.json
 cython_debug/
 
 # Archivos del projecto.
-django-polaris/
-backend/Documentacion/
+django-polaris*
+Documenta*
 backend/polaris.tar
 backend/src/base-dir
+backend/src/config/server/
+backend/src/core/polaris/migrations*
 backend/src/core/test.py
 backend/src/core/testing/*.json
 backend/src/core/testing/tests2.py
 backend/src/core/testing/views-bkp.py
+backend/src/core/testing-bkp*
 backend/src/etc/*
+backend/src/media/*
 etc-bkp*
-polaris_app/
-polaris_client/
+polaris_*
 prueba*
-Documentation*
-frontend*
-backend/src/core/testing2
+frontend

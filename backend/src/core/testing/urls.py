@@ -1,16 +1,18 @@
 from django.conf import settings
 from django.urls import path, include
-from django.contrib import admin
-import polaris.urls
+from .views import generate_toml, MySEP10Auth, get_home
+# from .sep6 import urls as sep6_urls
+# from .sep24 import urls as sep24_urls
 
-from .views import generate_toml, MySEP10Auth
 
 
 urlpatterns = [
     path(".well-known/stellar.toml", generate_toml),
-    path("auth", include("polaris.sep10.urls")),
     path("auth2", MySEP10Auth.as_view()),
-    path("sep24/", include("polaris.sep24.urls")),
+    path("sep6/", include("core.polaris.sep6.urls")),
+    path("auth", include("core.polaris.sep10.urls")),
+    path("sep24/", include("core.polaris.sep24.urls")),
+    path("", get_home.as_view())
 ]
 
 if settings.DEBUG:

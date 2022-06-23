@@ -4,7 +4,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 
 class PolarisConfig(AppConfig):
-    name = "polaris"
+    name = "core.polaris"
     verbose_name = "Django Polaris"
     default_auto_field = "django.db.models.AutoField"
 
@@ -13,9 +13,9 @@ class PolarisConfig(AppConfig):
         Initialize the app
         """
         from decimal import setcontext, DefaultContext
-        from polaris import settings  # loads internal settings
-        from polaris import cors  # loads CORS signals
-        from polaris.sep24.utils import check_sep24_config
+        from core.polaris import settings  # loads internal settings
+        from core.polaris import cors  # loads CORS signals
+        from core.polaris.sep24.utils import check_sep24_config
 
         # Set in-memory precision to match database-level precision
         # https://adamj.eu/tech/2020/03/23/setting-pythons-decimal-context-for-all-threads/#in-django
@@ -24,7 +24,6 @@ class PolarisConfig(AppConfig):
 
         self.check_middleware()
         self.check_protocol()
-        self.check_sep23_supported()
         if "sep-24" in settings.ACTIVE_SEPS:
             check_sep24_config()
 
@@ -40,8 +39,8 @@ class PolarisConfig(AppConfig):
 
     @staticmethod
     def check_protocol():
-        from polaris import settings
-        from polaris.utils import getLogger
+        from core.polaris import settings
+        from core.polaris.utils import getLogger
         from django.conf import settings as django_settings
 
         logger = getLogger(__name__)
@@ -55,13 +54,4 @@ class PolarisConfig(AppConfig):
         ):
             logger.debug(
                 "SECURE_SSL_REDIRECT is required to redirect HTTP traffic to HTTPS"
-            )
-
-    @staticmethod
-    def check_sep23_supported():
-        # use the same string comparisons as the SDK:
-        # https://github.com/StellarCN/py-stellar-base/blob/master/stellar_sdk/muxed_account.py#L15
-        if os.getenv("ENABLE_SEP_0023", "").lower() not in ("true", "1", "t"):
-            raise ImproperlyConfigured(
-                "environment variable ENABLE_SEP_0023 must be set to 'true'"
             )

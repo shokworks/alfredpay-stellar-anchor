@@ -5,10 +5,11 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 
-from polaris.models import Asset
-from polaris.integrations import (
+from core.polaris.models import Asset
+from core.polaris.integrations import (
     registered_fee_func,
     calculate_fee,
+    registered_custody_integration as rci,
 )
 
 
@@ -45,7 +46,10 @@ def info(request):
         "deposit": {},
         "withdraw": {},
         "fee": {"enabled": True},
-        "features": {"account_creation": True, "claimable_balances": True},
+        "features": {
+            "account_creation": rci.account_creation_supported,
+            "claimable_balances": rci.claimable_balances_supported,
+        },
     }
 
     for asset in Asset.objects.filter(sep24_enabled=True):

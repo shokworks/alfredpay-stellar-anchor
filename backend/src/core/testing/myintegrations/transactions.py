@@ -11,7 +11,7 @@ from core.polaris.templates import Template
 from core.polaris.sep10.token import SEP10Token
 
 
-class DepositIntegration:
+class MyDepositIntegration:
     """
     The container class for deposit integration functions.
 
@@ -125,21 +125,10 @@ class DepositIntegration:
         **kwargs: Dict
     ) -> Optional[Dict]:
         """
-        .. _`widget attributes`: https://docs.djangoproject.com/en/3.2/ref/forms/widgets/#styling-widget-instances
-        .. _`Django template variables`: https://docs.djangoproject.com/en/3.2/ref/templates/language/#variables
-        .. _`SEP-38 Asset Identification Format`: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#asset-identification-format
+        Return a dictionary containing page content to be used in the template passed for the
+        given `form` and `transaction`.
 
-        Return a dictionary containing the `Django template variables`_ to be passed to
-        the template rendered.
-
-        The anchor may also pass a special key, `template_name`, which should be a file
-        path relative your Django app's `/templates` directory. Polaris will render the
-        template specified by this key to the user instead of the default templates defined
-        below. Note that all of the `Django template variables`_ defined below will still
-        be passed to the template specified.
-
-        Polaris will pass one of the following ``polaris.templates.Template`` values to
-        indicate the default template Polaris will use.
+        Polaris will pass one of the following ``polaris.templates.Template`` values:
 
         ``Template.DEPOSIT``
 
@@ -161,7 +150,7 @@ class DepositIntegration:
         information for the transaction. Returning content will signal to Polaris that
         the user needs to take some action before receiving the next form, such as
         confirming their email. In this case, make sure to return an appropriate
-        `guidance` message or return a custom `template_name`.
+        `guidance` message.
 
         Using this function, anchors pass key-value pairs to the template being rendered.
         Some of these key-value pairs are used by Polaris, but anchors are allowed and
@@ -173,194 +162,22 @@ class DepositIntegration:
                 return {
                     "title": "Deposit Transaction Form",
                     "guidance": "Please enter the amount you would like to deposit.",
-                    "show_fee_table": True,
-                    "symbol": "$",
                     "icon_label": "Stellar Development Foundation",
                     "icon_path": "images/company-icon.png",
                     # custom field passed by the anchor
                     "username": "John.Doe"
                 }
 
-        Below are all the keys passed to the template rendered. If the dictionary returned has
-        the same key, the default value Polaris uses will be overwritten.
-
-        For ``Template.DEPOSIT`` and ``Template.WITHDRAW``:
-
-        ``form``
-
-            The ``django.forms.Form`` instance returned from ``form_for_transaction()``.
-
-        ``post_url``
-
-            The URL to make the POST request containing the form data to.
-
-        ``operation``
-
-            Either `deposit` or `withdraw`.
-
-        ``asset``
-
-            The ``polaris.models.Asset`` object of the Stellar asset being transacted.
-
-        ``use_fee_endpoint``
-
-            A boolean indicating whether or not Polaris should use the ``GET /fee``
-            endpoint when calculating fees and rendering the amounts on the page.
-
-        ``org_logo_url``
-
-            A URL for the default logo to render if the anchor has not specified their own
-            via `icon_path`.
-
-        ``additive_fees_enabled``
-
-            A boolean indicating whether or not to add fees to the amount entered in
-            ``TransactionForm`` amount fields. ``False`` by default, meaning fees are
-            subtracted from the amounts entered.
-
-        ``title``
-
-            The browser tab's title.
-
-        ``guidance``
-
-            A text message displayed on the page that should help guide the user to take
-            the appropriate action(s).
-
-        ``icon_label``
-
-            The label for the image rendered on the page specified by ``"icon_path"``.
-
-        ``icon_path``
-
-            The relative file path to the image you would like to use as the company icon
-            in the UI. The file path should be relative to your Django app's `/static`
-            directory. If `icon_path` is not present, Polaris will use the image specified by
-            your TOML integration function's ``ORG_LOGO`` key. If neither are present,
-            Polaris will use its default image. All images will be rendered in a 100 x 150px
-            sized box as defined by the default stylesheet.
-
-        ``show_fee_table``
-
-            A boolean for whether the fee table in the default template should be visible
-            on the page rendered to the user. This table is hidden by default unless
-            a ``TransactionForm`` is returned from ``form_for_transaction()``, in which
-            case the fee table will be displayed. If the anchor instructs Polaris to display
-            the fee table but a ``TransactionForm`` is not present on the page, the anchor is
-            responsible for updating the fee table with the appropriate values. This is
-            useful when the anchor is collecting the amount of an off-chain asset, since
-            ``TransactionForm`` assumes the amount collected is for an on-chain asset.
-
-        ``symbol``
-
-            The character string that precedes the amounts shown on the fee table. It defaults
-            to the Stellar ``Asset.symbol``. Note that the symbol used in input fields must
-            be passed separately using the field's `widget attributes`_.
-
-        For ``Template.MORE_INFO``
-
-        ``tx_json``
-
-            A JSON-serialized string matching the schema returned from `GET /transaction`
-
-        ``amount_in_asset``
-
-            The string representation of the asset given to the anchor by the user,
-            formatted using `SEP-38 Asset Identification Format`_.
-
-        ``amount_out_asset``
-
-            The string representation of the asset sent from the anchor to the user,
-            formatted using `SEP-38 Asset Identification Format`_.
-
-        ``amount_in``
-
-            A string containing the amount to be displayed on the page as `Amount Sent`
-
-        ``amount_out``
-
-            A string containing the amount to be displayed on the page as `Amount Received`
-
-        ``amount_fee``
-
-            A string containing the amount to be displayed on the page as `Fee`
-
-        ``amount_in_symbol``
-
-            ``Asset.symbol`` or ``OffChainAsset.symbol``, depending on whether or not
-            asset sent to the anchor is on or off chain. If ``Transaction.quote`` is
-            null, the value will always match ``Asset.symbol``.
-
-        ``amount_fee_symbol``
-
-            ``Asset.symbol`` or ``OffChainAsset.symbol``, depending on the value of
-            ``Transaction.fee_asset``. If ``Transaction.quote`` is null, the value will
-            always be ``Asset.symbol``.
-
-        ``amount_out_symbol``
-
-            ``Asset.symbol`` or ``OffChainAsset.symbol``, depending on whether or not
-            asset sent by the anchor is on or off chain. If ``Transaction.quote`` is
-            null, the value will always match ``Asset.symbol``.
-
-        ``amount_in_significant_decimals``
-
-            The number of decimals to display for amounts of ``Transaction.amount_in``.
-            Derived from ``Asset.significant_decimals`` or ``OffChainAsset.decimals``.
-            If ``Transaction.quote`` is null, the value will always match
-            ``Asset.significant_decimals``.
-
-        ``amount_fee_significant_decimals``
-
-            The number of decimals to display for amounts of ``Transaction.amount_fee``.
-            Derived from ``Asset.significant_decimals`` or ``OffChainAsset.decimals``,
-            depending on the value of ``Transaction.fee_asset``.
-
-        ``amount_out_significant_decimals``
-
-            The number of decimals to display for amounts of ``Transaction.amount_out``.
-            Derived from ``Asset.significant_decimals`` or ``OffChainAsset.decimals``.
-            If ``Transaction.quote`` is null, the value will always match
-            ``Asset.significant_decimals``.
-
-        ``transaction``
-
-            The ``polaris.models.Transaction`` object representing the transaction.
-
-        ``asset``
-
-            The ``polaris.models.Asset`` object representing the asset.
-
-        ``offchain_asset``
-
-            The ``OffChainAsset`` object used in the ``Transaction.quote``, if present.
-
-        ``price``
-
-            ``Transaction.quote.price``, if present.
-
-        ``price_inversion``
-
-            ``1 / Transaction.quote.price``, if ``price`` is present. The default
-            `more_info.html` template uses this number for displaying exchange rates
-            when quotes are used.
-
-        ``price_inversion_significant_decimals``
-
-            The number of decimals to display for exchange rates. Polaris calculates
-            this to ensure the rate displayed is always correct.
-
-        ``exchange_amount``
-
-            If ``Transaction.quote`` is not ``None``, ``exchange_amount`` is the
-            value of ``Transaction.amount_out`` expressed in units of
-            ``Transaction.amount_in``.
-
-        ``exchanged_amount``
-
-            If ``Transaction.quote`` is not ``None``, ``exchanged_amount`` is the
-            value of ``Transaction.amount_in`` expressed in units of
-            ``Transaction.amount_out``.
+        `title` is the browser tab's title, and `guidance` is shown as plain text on the
+        page. `icon_label` is the label for the icon specified by `icon_path`.
+
+        `icon_path` should be the relative file path to the image you would like to use
+        as the company icon in the UI. The file path should be relative to the value of
+        your ``STATIC_ROOT`` setting. If `icon_path` is not present, Polaris will use
+        the image specified by your TOML integration function's ``ORG_LOGO`` key.
+
+        Finally, if neither are present, Polaris will default to its default image.
+        All images will be rendered in a 100 x 150px sized box.
 
         :param request: a ``rest_framework.request.Request`` instance
         :param template: a ``polaris.templates.Template`` enum value
@@ -388,6 +205,13 @@ class DepositIntegration:
         ``DepositIntegration.form_for_transaction`` is called, store this
         data in a model not used by Polaris.
 
+        Keep in mind that if a ``TransactionForm`` is submitted, Polaris will
+        update the ``Transaction.amount_in``, ``Transaction.amount_fee``, and
+        ``Transaction.amount_out`` fields with the information collected. There is no
+        need to implement that yourself here. However, note that if the amount
+        ultimately delivered to the anchor does not match the amount specified in
+        the form, these attributes must be updated appropriately.
+
         If `form` is the last form to be served to the user, Polaris will update the
         transaction status to ``pending_user_transfer_start``, indicating that the
         anchor is waiting for the user to deliver off-chain funds to the anchor. If
@@ -398,16 +222,6 @@ class DepositIntegration:
         wait until the anchor changes the transaction's status to
         ``pending_user_transfer_start`` before including the transaction in calls to
         ``DepositIntegration.poll_pending_deposits()``.
-
-        If the user is requesting a deposit or withdrawal of a Stellar asset in
-        exchange for different off-chain asset, such as requesting a deposit of
-        USDC using fiat mexican pesos, the anchor must assign a ``Quote`` object
-        to ``Transaction.quote`` before the end of the interactive flow. Polaris
-        will check for a ``Quote`` object on the transaction and adjust the UI
-        of the ``MORE_INFO`` template to display the exchange rate and other
-        exchange-related information. ``Transaction.fee_asset`` also must be
-        populated with the asset in which fees will be collected, formatted
-        using `SEP-38 Asset Identification Format`_.
 
         :param request: the ``rest_framework.request.Request`` object
         :param form: the completed ``forms.Form`` submitted by the user
@@ -430,31 +244,8 @@ class DepositIntegration:
         to begin the interactive flow. If the `amount` or `callback` arguments
         are not ``None``, make sure you include them in the URL returned.
 
-        Note that ``after_interactive_flow()`` should also be implemented if this
-        function is implemented to ensure the status, amounts, fees, and any
-        other relevant information is saved to the ``Transaction`` record once
-        the interactive flow is complete.
-
         :return: a URL to be used as the entry point for the interactive
             deposit flow
-        """
-        raise NotImplementedError()
-
-    def after_interactive_flow(self, request: Request, transaction: Transaction):
-        """
-        Override this function to update the transaction or any related models with
-        information collected during an external interactive flow.
-
-        This function will be called each time the external application makes a
-        request to the ``GET /sep24/transactions/deposit/interactive`` endpoint. This
-        gives anchors the freedom to update the transaction once at the end of the flow
-        or multiple times throughout the flow.
-
-        The last time this function is called, the transaction's ``status`` value must
-        be updated to ``pending_user_transfer_start`` or ``pending_anchor``, and the
-        transaction's amounts and fees must also be updated. This will signal to the
-        wallet application that the interactive flow has complete and that the anchor is
-        ready to proceed.
         """
         raise NotImplementedError()
 
@@ -465,16 +256,12 @@ class DepositIntegration:
         stellar_account: str,
         fields: Dict,
         language_code: str,
-        muxed_account: Optional[str] = None,
         account_memo: Optional[str] = None,
         account_memo_type: Optional[str] = None,
         *args: List,
         **kwargs: Dict
     ):
         """
-        **DEPRECATED:** `stellar_account`, `account_memo`, `account_memo_type`, and `muxed_account`
-        parameters. Use the `token` object passed instead.
-
         Save the `fields` passed for the user identified by `stellar_account` to pre-populate
         the forms returned from ``form_for_transaction()``. Note that this function is called
         before the transaction is created.
@@ -484,13 +271,7 @@ class DepositIntegration:
         ::
 
             # Assuming you have a similar method and model
-            if token.muxed_account:
-                user_key = token.muxed_account
-            elif token.memo:
-                user_key = f"{token.account}:{token.memo}"
-            else:
-                user_key = token.account
-            user = user_for_key(user_key)
+            user = user_for_account(stellar_account)
             user.phone_number = fields.get('mobile_number')
             user.email = fields.get('email_address')
             user.save()
@@ -500,13 +281,7 @@ class DepositIntegration:
         ::
 
             # In your form_for_transaction() implementation
-            if token.muxed_account:
-                user_key = token.muxed_account
-            elif token.memo:
-                user_key = f"{token.account}:{token.memo}"
-            else:
-                user_key = token.account
-            user = user_for_key(user_key)
+            user = user_for_account(transaction.stellar_account)
             form_args = {
                 'phone_number': format_number(user.phone_number),
                 'email': user.email_address
@@ -531,38 +306,24 @@ class DepositIntegration:
     ) -> Dict:
         """
         .. _deposit: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#deposit
-        .. _deposit-exchange: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#deposit-exchange
         .. _Deposit no additional information needed: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#1-success-no-additional-information-needed
         .. _Customer information needed: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#2-customer-information-needed-non-interactive
         .. _Customer Information Status: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#4-customer-information-status
 
-        This function is called during requests made to the SEP-6 deposit_ and
-        `deposit-exchange`_ endpoints. The `params` object will contain the parameters
-        included in the request. Note that Polaris will only call this function for
-        `deposit-exchange`_ requests if SEP-38 is added to Polaris' ``ACTIVE_SEPS`` setting
-        and the requested Stellar asset is enabled for SEP-38.
-
-        If a request to the the `deposit-exchange`_ endpoint is made, a ``Quote`` object
-        will be assigned to the ``Transaction`` object passed.
-
-        Process these parameters and return one of the following responses outlined below
-        as a dictionary. Save `transaction` to the DB if you plan to return a success
-        response. If `transaction` is saved to the DB but a failure response is returned,
-        Polaris will return a 500 error to the user.
+        Process the request arguments passed to the deposit_ endpoint and return one of the
+        following responses outlined below as a dictionary. Save `transaction` to the DB
+        if you plan to return a success response. If `transaction` is saved to the DB but a
+        failure response is returned, Polaris will return a 500 error to the user.
 
         If you'd like the user to send ``Transaction.amount_in`` `plus the fee amount`,
         add the amount charged as a fee to ``Transaction.amount_in`` and
         ``Transaction.amount_expected``. here. While not required per SEP-6, it is
         encouraged to also populate ``Transaction.amount_fee`` and ``Transaction.amount_out``
-        here as well. If this function is called for a `deposit-exchange`_ request,
-        ``Transaction.fee_asset`` should also be assigned. If not assigned here, these
-        columns must be assigned before returning the transaction from
-        ``RailsIntegration.poll_pending_deposits()``.
+        here as well.
 
         Note that the amount sent over the Stellar Network could differ from
         the amount specified in this API call, so fees and the amount delievered may have to
-        be recalculated in ``RailsIntegration.poll_pending_deposits()`` for deposits and
-        ``RailsIntegration.execute_outgoing_transaction()`` for withdrawals.
+        be recalculated in ``RailsIntegration.execute_outgoing_transaction()``.
 
         Polaris responds to requests with the standard status code according the SEP. However,
         if you would like to return a custom error code in the range of 400-599 you may raise
@@ -610,16 +371,25 @@ class DepositIntegration:
         :param transaction: an unsaved ``Transaction`` object representing the transaction
             to be processed
         """
-        raise NotImplementedError(
-            "`process_sep6_request` must be implemented if SEP-6 is active"
-        )
+
+        return {
+            "how": "<your bank account address>",
+            "extra_info": {
+                "message": "Deposit the funds to the bank account specified in 'how'"
+                }
+            }
+
+        # raise NotImplementedError(
+        #     "`process_sep6_request` must be implemented if SEP-6 is active"
+        # )
 
     def create_channel_account(
         self, transaction: Transaction, *args: List, **kwargs: Dict
     ):
         """
         Create a temporary, per-deposit-transaction-object Stellar account using a different
-        Stellar account and save the secret key of the created account to ``transaction.channel_seed``.
+        Stellar account `that does not require multiple signatures`, and save the secret key
+        of the created account to ``transaction.channel_seed``.
 
         This channel account must only be used as the source account for transactions related to the
         ``Transaction`` object passed. It also must not be used to submit transactions by any service
@@ -697,7 +467,7 @@ class DepositIntegration:
         raise NotImplementedError("PATCH /transactions/:id is not supported")
 
 
-class WithdrawalIntegration:
+class MyWithdrawalIntegration:
     """
     The container class for withdrawal integration functions
 
@@ -745,7 +515,16 @@ class WithdrawalIntegration:
         **kwargs: Dict
     ) -> Optional[Dict]:
         """
-        Same as ``DepositIntegration.content_for_template``.
+        Same as ``DepositIntegration.content_for_template``, except the ``Template``
+        values passed will be one of:
+
+        ``Template.WITHDRAW``
+
+            The template used for withdraw flows
+
+        ``Template.MORE_INFO``
+
+            The template used to show transaction details
 
         :param request: a ``rest_framework.request.Request`` instance
         :param template: a ``polaris.templates.Template`` enum value
@@ -787,24 +566,16 @@ class WithdrawalIntegration:
         Same as ``DepositIntegration.interactive_url``
 
         :return: a URL to be used as the entry point for the interactive
-            withdrawal flow
-        """
-        raise NotImplementedError()
-
-    def after_interactive_flow(self, request: Request, transaction: Transaction):
-        """
-        Same as ``DepositIntegration.after_interactive_flow``
+            withdraw flow
         """
         raise NotImplementedError()
 
     def save_sep9_fields(
         self,
-        token: SEP10Token,
         request: Request,
         stellar_account: str,
         fields: Dict,
         language_code: str,
-        muxed_account: Optional[str] = None,
         account_memo: Optional[str] = None,
         account_memo_type: Optional[str] = None,
         *args: List,
@@ -866,5 +637,5 @@ class WithdrawalIntegration:
         raise NotImplementedError("PATCH /transactions/:id is not supported")
 
 
-registered_deposit_integration = DepositIntegration()
-registered_withdrawal_integration = WithdrawalIntegration()
+registered_deposit_integration = MyDepositIntegration()
+registered_withdrawal_integration = MyWithdrawalIntegration()

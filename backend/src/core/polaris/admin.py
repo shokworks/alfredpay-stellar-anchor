@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from polaris.models import (
+from core.polaris.models import (
     Transaction,
     Asset,
     Quote,

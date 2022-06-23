@@ -37,8 +37,8 @@ from stellar_sdk.exceptions import (
 from stellar_sdk import Keypair, MuxedAccount
 from stellar_sdk.client.requests_client import RequestsClient
 
-from polaris import settings
-from polaris.utils import getLogger, render_error_response
+from core.polaris import settings
+from core.polaris.utils import getLogger, render_error_response
 
 MIME_URLENCODE, MIME_JSON = "application/x-www-form-urlencoded", "application/json"
 logger = getLogger(__name__)
@@ -298,7 +298,7 @@ class SEP10Auth(APIView):
         # set iat value to minimum timebound of the challenge so that the JWT returned
         # for a given challenge is always the same.
         # https://github.com/stellar/stellar-protocol/pull/982
-        issued_at = challenge.transaction.transaction.time_bounds.min_time
+        issued_at = challenge.transaction.transaction.preconditions.time_bounds.min_time
 
         # format sub value based on muxed account or memo
         if challenge.client_account_id.startswith("M") or not challenge.memo:

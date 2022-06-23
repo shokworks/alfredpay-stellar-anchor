@@ -14,8 +14,8 @@ from stellar_sdk.exceptions import (
     Ed25519SecretSeedInvalidError,
 )
 
-from polaris import settings
-from polaris.models import Transaction, Asset
+from core.polaris import settings
+from core.polaris.models import Transaction, Asset
 
 logger = getLogger(__name__)
 
@@ -40,13 +40,13 @@ class Command(BaseCommand):
         reset makes in-progress transactions unrecoverable.
 
     Updates the paging_token of latest transaction streamed for each anchored asset
-        :mod:`~polaris.management.commands.watch_transactions` streams transactions to
+        :mod:`~core.polaris.management.commands.watch_transactions` streams transactions to
         and from each anchored asset’s distribution account. Specifically, it streams
         transactions starting with the most recently completed transaction’s
-        :attr:`~polaris.models.Transaction.paging_token` on startup. When the testnet
-        resets, the :attr:`~polaris.models.Transaction.paging_token` used for transactions
+        :attr:`~core.polaris.models.Transaction.paging_token` on startup. When the testnet
+        resets, the :attr:`~core.polaris.models.Transaction.paging_token` used for transactions
         prior to the reset are no longer valid. To fix this, Polaris updates the
-        :attr:`~polaris.models.Transaction.paging_token` of the most recently completed
+        :attr:`~core.polaris.models.Transaction.paging_token` of the most recently completed
         transaction for each anchored asset to "now".
 
     **Positional arguments:**

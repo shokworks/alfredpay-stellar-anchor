@@ -10,16 +10,16 @@ from rest_framework.renderers import (
     BrowsableAPIRenderer,
 )
 
-from polaris.shared import endpoints
-from polaris.sep10.utils import validate_sep10_token
-from polaris.sep10.token import SEP10Token
-from polaris.utils import (
+from core.polaris.shared import endpoints
+from core.polaris.sep10.utils import validate_sep10_token
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.utils import (
     render_error_response,
     getLogger,
     validate_patch_request_fields,
 )
-from polaris.models import Transaction
-from polaris.integrations import (
+from core.polaris.models import Transaction
+from core.polaris.integrations import (
     registered_deposit_integration as rdi,
     registered_withdrawal_integration as rwi,
 )

@@ -2,8 +2,8 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from polaris.sep10.token import SEP10Token
-from polaris.utils import render_error_response
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.utils import render_error_response
 
 
 def check_auth(request, func, *args, **kwargs):

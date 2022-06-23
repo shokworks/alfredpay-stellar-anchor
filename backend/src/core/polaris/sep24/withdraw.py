@@ -1,9 +1,9 @@
-from datetime import datetime
 from decimal import Decimal, DecimalException
 from urllib.parse import urlencode
 
-import pytz
 from django.conf import settings as django_settings
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.validators import URLValidator
 from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.shortcuts import redirect
@@ -25,16 +25,16 @@ from stellar_sdk.exceptions import (
     ValueError as StellarSdkValueError,
 )
 
-from polaris import settings
-from polaris.templates import Template
-from polaris.utils import (
+from core.polaris import settings
+from core.polaris.templates import Template
+from core.polaris.utils import (
     getLogger,
     render_error_response,
     extract_sep9_fields,
     create_transaction_id,
-    memo_hex_to_base64,
+    validate_account_and_memo,
 )
-from polaris.sep24.utils import (
+from core.polaris.sep24.utils import (
     interactive_url,
     check_authentication,
     authenticate_session,
@@ -42,13 +42,14 @@ from polaris.sep24.utils import (
     interactive_args_validation,
     get_timezone_utc_offset,
 )
-from polaris.sep10.utils import validate_sep10_token
-from polaris.sep10.token import SEP10Token
-from polaris.models import Asset, Transaction
-from polaris.integrations.forms import TransactionForm
-from polaris.locale.utils import validate_language, activate_lang_for_request
-from polaris.integrations import (
+from core.polaris.sep10.utils import validate_sep10_token
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.models import Asset, Transaction
+from core.polaris.integrations.forms import TransactionForm
+from core.polaris.locale.utils import validate_language, activate_lang_for_request
+from core.polaris.integrations import (
     registered_withdrawal_integration as rwi,
+    registered_custody_integration as rci,
     registered_fee_func,
     calculate_fee,
     registered_toml_func,
@@ -106,21 +107,19 @@ def post_interactive_withdraw(request: Request) -> Response:
                     "The anchor did not provide content, is the interactive flow already complete?"
                 ),
                 status_code=422,
-                content_type="text/html",
+                as_html=True,
             )
         return render_error_response(
             _("The anchor did not provide content, unable to serve page."),
             status_code=500,
-            content_type="text/html",
+            as_html=True,
         )
 
     if not form.is_bound:
         # The anchor must initialize the form with request.data
         logger.error("form returned was not initialized with POST data, returning 500")
         return render_error_response(
-            _("Unable to validate form submission."),
-            status_code=500,
-            content_type="text/html",
+            _("Unable to validate form submission."), status_code=500, as_html=True
         )
 
     elif form.is_valid():
@@ -183,23 +182,29 @@ def post_interactive_withdraw(request: Request) -> Response:
             # ensure all changes from `after_form_validation()` have been saved to the db
             transaction.refresh_from_db()
 
-            # Add memo now that interactive flow is complete
-            #
-            # We use the transaction ID as a memo on the Stellar transaction for the
-            # payment in the withdrawal. This lets us identify that as uniquely
-            # corresponding to this `Transaction` in the database. But a UUID4 is a 32
-            # character hex string, while the Stellar HashMemo requires a 64 character
-            # hex-encoded (32 byte) string. So, we zero-pad the ID to create an
-            # appropriately sized string for the `HashMemo`.
-            transaction_id_hex = transaction.id.hex
-            padded_hex_memo = "0" * (64 - len(transaction_id_hex)) + transaction_id_hex
-            transaction.memo = memo_hex_to_base64(padded_hex_memo)
-
             if transaction.status != transaction.STATUS.pending_anchor:
+                # Add receiving account and memo now that anchor is ready to receive payment
                 transaction.status = Transaction.STATUS.pending_user_transfer_start
+                try:
+                    receiving_account, memo, memo_type = validate_account_and_memo(
+                        *rci.get_receiving_account_and_memo(
+                            request=request, transaction=transaction
+                        )
+                    )
+                except ValueError:
+                    logger.exception(
+                        "CustodyIntegration.get_receiving_account_and_memo() returned invalid values"
+                    )
+                    return render_error_response(
+                        _("unable to process the request"), status_code=500
+                    )
+                transaction.receiving_anchor_account = receiving_account
+                transaction.memo = memo
+                transaction.memo_type = memo_type
+                transaction.save()
             else:
                 logger.info(f"Transaction {transaction.id} is pending KYC approval")
-            transaction.save()
+
             args = {"id": transaction.id, "initialLoad": "true"}
             if callback:
                 args["callback"] = callback
@@ -248,7 +253,7 @@ def post_interactive_withdraw(request: Request) -> Response:
         return Response(
             content,
             template_name=content_from_anchor.get(
-                "template_name", "polaris/withdraw.html"
+                "template_name", "core.polaris/withdraw.html"
             ),
             status=400,
         )
@@ -261,16 +266,42 @@ def complete_interactive_withdraw(request: Request) -> Response:
     """
     GET /transactions/withdraw/interactive/complete
 
-    Updates the transaction status to pending_user_transfer_start and
-    redirects to GET /more_info. A `callback` can be passed in the URL
-    to be used by the more_info template javascript.
+    This endpoint serves as a proxy to the
+    ``WithdrawalIntegration.after_interactive_flow()`` function, which should be
+    implemented if ``WithdrawalIntegration.interactive_url()`` is also implemented.
+
+    Anchors using external interactive flows should redirect to this endpoint
+    from the external application once complete so that the Polaris `Transaction`
+    record can be updated with the appropriate information collected within the
+    interactive flow.
+
+    After allowing the anchor to process the information sent, this endpoint will
+    redirect to the transaction's more info page, which will make the SEP-24
+    callback request if requested by the client.
+
+    Note that the more info page's template and related CSS should be updated
+    if the anchor wants to keep the brand experience consistent with the external
+    application seen by the user immediately prior.
     """
-    transaction_id = request.GET.get("transaction_id")
-    callback = request.GET.get("callback")
-    Transaction.objects.filter(id=transaction_id).update(
-        status=Transaction.STATUS.pending_user_transfer_start
-    )
-    logger.info(f"Hands-off interactive flow complete for transaction {transaction_id}")
+    transaction_id = request.query_params.get("transaction_id")
+    callback = request.query_params.get("callback")
+    try:
+        transaction = Transaction.objects.get(id=transaction_id)
+    except ObjectDoesNotExist:
+        return render_error_response(
+            _("transaction not found"), status_code=404, as_html=True
+        )
+    if callback and callback.lower() != "postmessage":
+        try:
+            URLValidator(schemes=["https", "http"])(callback)
+        except ValidationError:
+            return render_error_response(
+                _("invalid 'callback' URL"), status_code=400, as_html=True
+            )
+    try:
+        rwi.after_interactive_flow(request=request, transaction=transaction)
+    except NotImplementedError:
+        return render_error_response(_("internal error"), status_code=500, as_html=True)
     args = {"id": transaction_id, "initialLoad": "true"}
     if callback:
         args["callback"] = callback
@@ -349,12 +380,12 @@ def get_interactive_withdraw(request: Request) -> Response:
                     "The anchor did not provide content, is the interactive flow already complete?"
                 ),
                 status_code=422,
-                content_type="text/html",
+                as_html=True,
             )
         return render_error_response(
             _("The anchor did not provide content, unable to serve page."),
             status_code=500,
-            content_type="text/html",
+            as_html=True,
         )
 
     url_args = {"transaction_id": transaction.id, "asset_code": asset.code}
@@ -386,7 +417,7 @@ def get_interactive_withdraw(request: Request) -> Response:
 
     return Response(
         content,
-        template_name=content_from_anchor.get("template_name", "polaris/withdraw.html"),
+        template_name=content_from_anchor.get("template_name", "core.polaris/withdraw.html"),
     )
 
 
@@ -394,7 +425,10 @@ def get_interactive_withdraw(request: Request) -> Response:
 @validate_sep10_token()
 @renderer_classes([JSONRenderer, BrowsableAPIRenderer])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
-def withdraw(token: SEP10Token, request: Request,) -> Response:
+def withdraw(
+    token: SEP10Token,
+    request: Request,
+) -> Response:
     """
     POST /transactions/withdraw/interactive
 
@@ -415,12 +449,7 @@ def withdraw(token: SEP10Token, request: Request,) -> Response:
 
     # Verify that the asset code exists in our database, with withdraw enabled.
     asset = Asset.objects.filter(code=asset_code).first()
-    if not (
-        asset
-        and asset.withdrawal_enabled
-        and asset.sep24_enabled
-        and asset.distribution_account
-    ):
+    if not (asset and asset.withdrawal_enabled and asset.sep24_enabled):
         return render_error_response(_("invalid operation for asset %s") % asset_code)
 
     amount = None
@@ -474,7 +503,6 @@ def withdraw(token: SEP10Token, request: Request,) -> Response:
         asset=asset,
         kind=Transaction.KIND.withdrawal,
         status=Transaction.STATUS.incomplete,
-        receiving_anchor_account=asset.distribution_account,
         memo_type=Transaction.MEMO_TYPES.hash,
         protocol=Transaction.PROTOCOL.sep24,
         more_info_url=request.build_absolute_uri(

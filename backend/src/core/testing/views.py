@@ -1,33 +1,45 @@
 import os
+import jwt
 import toml
 from urllib.parse import urlparse
 
+from django.http import HttpResponseRedirect
+from django.contrib.staticfiles import finders
+from django.shortcuts import render
+from django.utils.encoding import smart_str
 from django.utils.translation import gettext
+from django.views.generic import View
 
 from rest_framework import status
-from rest_framework.request import Request
-from rest_framework.response import Response
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
-from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
-
-from polaris import settings
-from polaris.integrations import registered_toml_func
-from polaris.models import Asset
-from polaris.utils import getLogger, render_error_response
-from polaris.sep1.views import PolarisPlainTextRenderer, generate_toml
-from polaris.sep10.views import SEP10Auth
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.renderers import BaseRenderer, JSONRenderer, BrowsableAPIRenderer
+from rest_framework.views import APIView
 
 from stellar_sdk import Keypair
 from stellar_sdk.client.requests_client import RequestsClient
-from stellar_sdk.sep.stellar_toml import fetch_stellar_toml
 from stellar_sdk.operation import ManageData
-
+from stellar_sdk.exceptions import (
+    NotFoundError,
+    ConnectionError,
+    Ed25519PublicKeyInvalidError,
+)
 from stellar_sdk.sep.exceptions import (
     InvalidSep10ChallengeError,
     StellarTomlNotFoundError,
 )
-from .stellar_web_authentication import (
+from stellar_sdk.sep.stellar_toml import fetch_stellar_toml
+
+from core.polaris import settings
+from core.polaris.integrations import registered_toml_func, get_stellar_toml
+from core.polaris.models import Asset
+from core.polaris.utils import getLogger, render_error_response
+from core.polaris.sep1.views import PolarisPlainTextRenderer, generate_toml
+from core.polaris.sep10.views import SEP10Auth
+
+from core.testing.stellar_web_authentication import (
     build_challenge_transaction,
     read_challenge_transaction,
     verify_challenge_transaction_threshold,
@@ -37,6 +49,7 @@ from .stellar_web_authentication import (
 MIME_URLENCODE, MIME_JSON = "application/x-www-form-urlencoded", "application/json"
 logger = getLogger(__name__)
 
+
 @api_view(["GET", "HEAD"])
 @renderer_classes([PolarisPlainTextRenderer])
 def generate_toml(generate_toml):
@@ -45,10 +58,6 @@ def generate_toml(generate_toml):
     }
     toml_dict2 = {
         "NETWORK_PASSPHRASE": settings.STELLAR_NETWORK_PASSPHRASE,
-        "WEB_AUTH_ENDPOINT": os.path.join(settings.HOST_URL, "auth"),
-        "SIGNING_KEY": settings.SIGNING_KEY,
-        "TRANSFER_SERVER": os.path.join(settings.HOST_URL, "sep24"),
-        "TRANSFER_SERVER_SEP0024": os.path.join(settings.HOST_URL, "sep24"),
         "ACCOUNTS": [
             asset.distribution_account
             for asset in Asset.objects.exclude(distribution_seed__isnull=True)
@@ -65,15 +74,47 @@ def generate_toml(generate_toml):
             "ORG_OFFICIAL_EMAIL": "hello@alfred-pay.com",
         },
     }
-    toml_dict3 = {
-        "CURRENCIES": [
-            {"code": asset.code, "issuer": asset.issuer,
-	    "status": "test", "is_asset_anchored": False,
-	    "anchor_asset_type": "fiat",
-	    "desc": "Cross border remittance anchor that uses USDC as a medium of exchange."}
-            for asset in Asset.objects.all().iterator()
-        ],
-    }
+    if "sep-24" in settings.ACTIVE_SEPS:
+        toml_dict2["TRANSFER_SERVER"] = os.path.join(settings.HOST_URL, "sep24")
+        toml_dict2["TRANSFER_SERVER_SEP0024"] = toml_dict2["TRANSFER_SERVER"]
+    if "sep-6" in settings.ACTIVE_SEPS:
+        toml_dict2["TRANSFER_SERVER"] = os.path.join(settings.HOST_URL, "sep6")
+    if "sep-10" in settings.ACTIVE_SEPS:
+        toml_dict2["WEB_AUTH_ENDPOINT"] = os.path.join(settings.HOST_URL, "auth")
+        toml_dict2["SIGNING_KEY"] = settings.SIGNING_KEY
+    if "sep-12" in settings.ACTIVE_SEPS:
+        toml_dict2["KYC_SERVER"] = os.path.join(settings.HOST_URL, "kyc")
+    if "sep-31" in settings.ACTIVE_SEPS:
+        toml_dict2["DIRECT_PAYMENT_SERVER"] = os.path.join(settings.HOST_URL, "sep31")
+
+    currencies = []
+    for asset in Asset.objects.all().iterator():
+        if asset.code == "USDC":
+            currencies1 = {
+                "code": asset.code, "issuer": asset.issuer,
+                "status": "test", "is_asset_anchored": True,
+                "anchor_asset_type": "fiat", "anchor_asset": "USD", "name": "USD Coin",
+                "redemption_instructions": "Redeemable through a Alfred-pay account at https://alfredpay.io",
+                "desc": "Cross border remittance anchor that uses USDC as a medium of exchange."
+            }
+            currencies.append(currencies1)
+        elif asset.code == "PODC":
+            currencies1b = {
+                "code": asset.code, "issuer": asset.issuer,
+                "status": "test", "is_asset_anchored": True,
+                "anchor_asset_type": "fiat", "anchor_asset": "POD", "name": "POD Coin",
+                "redemption_instructions": "Redeemable through a Alfred-pay account at https://alfredpay.io",
+                "desc": "Cross border remittance anchor that uses PODC as a medium of exchange."
+            }
+            currencies.append(currencies1b)
+        else:
+            currencies2 = {"code": asset.code, "issuer": asset.issuer,
+                           "status": "test", "is_asset_anchored": False}
+            currencies.append(currencies2)
+    toml_dict3 = {}
+    toml_dict3["CURRENCIES"] = []
+    toml_dict3.update({"CURRENCIES": currencies})
+
     content = toml.dumps(toml_dict1) + "\n" + toml.dumps(toml_dict2) + "\n" + toml.dumps(toml_dict3)
 
     return Response(content, content_type="text/plain")
@@ -147,7 +188,6 @@ class MySEP10Auth(SEP10Auth):
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        print(f"transaction: {transaction}")
         return Response(
             {
                 "transaction": transaction,
@@ -258,3 +298,8 @@ class MySEP10Auth(SEP10Auth):
             f"Challenge verified using account signers: {[s.account_id for s in signers_found]}"
         )
         return client_domain, None
+
+
+class get_home(View):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'pruebas/plaid.html')

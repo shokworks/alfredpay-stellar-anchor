@@ -11,7 +11,7 @@ from stellar_sdk.exceptions import (
     MuxedEd25519AccountInvalidError,
 )
 
-from polaris import settings
+from core.polaris import settings
 
 
 class SEP10Token:

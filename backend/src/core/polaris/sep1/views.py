@@ -16,10 +16,14 @@ from rest_framework.response import Response
 from rest_framework.renderers import BaseRenderer
 from rest_framework.decorators import api_view, renderer_classes
 
-from polaris import settings
-from polaris.utils import getLogger
-from polaris.integrations import registered_toml_func, get_stellar_toml
-from polaris.models import Asset
+from core.polaris import settings
+from core.polaris.utils import getLogger
+from core.polaris.integrations import (
+    registered_toml_func,
+    get_stellar_toml,
+    registered_custody_integration as rci,
+)
+from core.polaris.models import Asset
 
 
 logger = getLogger(__name__)
@@ -47,22 +51,25 @@ def generate_toml(request: Request) -> Response:
         # integration function is not used, check to see if a static file is defined
         static_toml = None
         if settings.LOCAL_MODE:
-            static_toml = finders.find("polaris/local-stellar.toml")
+            static_toml = finders.find("core.polaris/local-stellar.toml")
         if not static_toml:
-            static_toml = finders.find("polaris/stellar.toml")
+            static_toml = finders.find("core.polaris/stellar.toml")
         if static_toml:
             with open(static_toml) as f:
                 return Response(f.read(), content_type="text/plain")
 
     # The anchor uses the registered TOML function, replaced or not
     toml_dict = {
-        "ACCOUNTS": [
-            asset.distribution_account
-            for asset in Asset.objects.exclude(distribution_seed__isnull=True)
-        ],
-        "VERSION": "0.1.0",
         "NETWORK_PASSPHRASE": settings.STELLAR_NETWORK_PASSPHRASE,
     }
+    distribution_accounts = []
+    for asset in Asset.objects.all():
+        try:
+            distribution_accounts.append(rci.get_distribution_account(asset))
+        except NotImplementedError:
+            break
+    if distribution_accounts:
+        toml_dict["ACCOUNTS"] = distribution_accounts
     if "sep-24" in settings.ACTIVE_SEPS:
         toml_dict["TRANSFER_SERVER"] = os.path.join(settings.HOST_URL, "sep24")
         toml_dict["TRANSFER_SERVER_SEP0024"] = toml_dict["TRANSFER_SERVER"]
@@ -76,7 +83,7 @@ def generate_toml(request: Request) -> Response:
     if "sep-31" in settings.ACTIVE_SEPS:
         toml_dict["DIRECT_PAYMENT_SERVER"] = os.path.join(settings.HOST_URL, "sep31")
     if "sep-38" in settings.ACTIVE_SEPS:
-        toml_dict["QUOTE_SERVER"] = os.path.join(settings.HOST_URL, "sep38")
+        toml_dict["ANCHOR_QUOTE_SERVER"] = os.path.join(settings.HOST_URL, "sep38")
 
     toml_dict.update(registered_toml_func(request))
     content = toml.dumps(toml_dict)

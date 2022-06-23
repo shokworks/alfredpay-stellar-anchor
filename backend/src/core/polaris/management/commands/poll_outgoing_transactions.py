@@ -5,9 +5,9 @@ from datetime import datetime, timezone
 
 from django.core.management import BaseCommand
 
-from polaris.utils import getLogger, maybe_make_callback
-from polaris.models import Transaction
-from polaris.integrations import registered_rails_integration as rri
+from core.polaris.utils import getLogger, maybe_make_callback
+from core.polaris.models import Transaction
+from core.polaris.integrations import registered_rails_integration as rri
 
 
 logger = getLogger(__name__)
@@ -18,10 +18,10 @@ TERMINATE = False
 class Command(BaseCommand):
     """
     Polaris periodically queries for transactions in ``pending_external`` and passes
-    them to the :meth:`~polaris.integrations.RailsIntegration.poll_outgoing_transactions`.
+    them to the :meth:`~core.polaris.integrations.RailsIntegration.poll_outgoing_transactions`.
 
     The anchor is expected to update the transactions’
-    :attr:`~polaris.models.Transaction.status` to ``completed`` if the funds have been
+    :attr:`~core.polaris.models.Transaction.status` to ``completed`` if the funds have been
     confirmed to be delivered.
 
     **Optional arguments:**

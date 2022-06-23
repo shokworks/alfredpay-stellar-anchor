@@ -19,23 +19,25 @@ from stellar_sdk.exceptions import (
     ValueError as StellarSdkValueError,
 )
 
-from polaris import settings
-from polaris.models import Asset, Transaction, Quote
-from polaris.locale.utils import validate_language, activate_lang_for_request
-from polaris.utils import (
+from core.polaris import settings
+from core.polaris.models import Asset, Transaction, Quote
+from core.polaris.locale.utils import validate_language, activate_lang_for_request
+from core.polaris.utils import (
     getLogger,
     render_error_response,
     create_transaction_id,
     extract_sep9_fields,
     make_memo,
+    get_account_obj,
     get_quote_and_offchain_source_asset,
 )
-from polaris.shared.endpoints import SEP6_MORE_INFO_PATH
-from polaris.sep6.utils import validate_403_response
-from polaris.sep10.utils import validate_sep10_token
-from polaris.sep10.token import SEP10Token
-from polaris.integrations import (
+from core.polaris.shared.endpoints import SEP6_MORE_INFO_PATH
+from core.polaris.sep6.utils import validate_403_response
+from core.polaris.sep10.utils import validate_sep10_token
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.integrations import (
     registered_deposit_integration as rdi,
+    registered_custody_integration as rci,
     registered_fee_func,
     calculate_fee,
 )
@@ -326,6 +328,20 @@ def parse_request_args(
                 _("quote has already been used in a transaction")
             )
         }
+
+    if not rci.account_creation_supported:
+        if account.startswith("M"):
+            stellar_account = StrKey.decode_muxed_account(account).ed25519
+        else:
+            stellar_account = account
+        try:
+            get_account_obj(Keypair.from_public_key(stellar_account))
+        except RuntimeError:
+            return {
+                "error": render_error_response(
+                    _("public key 'account' must be a funded Stellar account")
+                )
+            }
 
     args = {
         "account": request.GET.get("account"),

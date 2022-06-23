@@ -1,25 +1,30 @@
 import sys
 from typing import Callable
 
-from polaris.integrations.customers import (
+from core.polaris.integrations.customers import (
     CustomerIntegration,
     registered_customer_integration,
 )
-from polaris.integrations.fees import calculate_fee, registered_fee_func
-from polaris.integrations.forms import TransactionForm, CreditCardForm
-from polaris.integrations.info import default_info_func, registered_info_func
-from polaris.integrations.quote import QuoteIntegration, registered_quote_integration
-from polaris.integrations.rails import RailsIntegration, registered_rails_integration
-from polaris.integrations.sep31 import (
+from core.polaris.integrations.fees import calculate_fee, registered_fee_func
+from core.polaris.integrations.forms import TransactionForm, CreditCardForm
+from core.polaris.integrations.info import default_info_func, registered_info_func
+from core.polaris.integrations.quote import QuoteIntegration, registered_quote_integration
+from core.polaris.integrations.rails import RailsIntegration, registered_rails_integration
+from core.polaris.integrations.sep31 import (
     SEP31ReceiverIntegration,
     registered_sep31_receiver_integration,
 )
-from polaris.integrations.toml import get_stellar_toml, registered_toml_func
-from polaris.integrations.transactions import (
+from core.polaris.integrations.toml import get_stellar_toml, registered_toml_func
+from core.polaris.integrations.transactions import (
     DepositIntegration,
     WithdrawalIntegration,
     registered_deposit_integration,
     registered_withdrawal_integration,
+)
+from core.polaris.integrations.custody import (
+    CustodyIntegration,
+    SelfCustodyIntegration,
+    registered_custody_integration,
 )
 
 
@@ -32,6 +37,7 @@ def register_integrations(
     fee: Callable = None,
     sep6_info: Callable = None,
     customer: CustomerIntegration = None,
+    custody: CustodyIntegration = None,
     quote: QuoteIntegration = None,
 ):
     """
@@ -47,7 +53,7 @@ def register_integrations(
             verbose_name = name
 
             def ready(self):
-                from polaris.integrations import register_integrations
+                from core.polaris.integrations import register_integrations
                 from myapp.integrations import (
                     MyDepositIntegration,
                     MyWithdrawalIntegration,
@@ -84,6 +90,8 @@ def register_integrations(
         values for an Asset
     :param customer: the ``CustomerIntegration`` subclass instance to be used
         by Polaris
+    :param custody: the ``CustodyIntegration`` subclass instance to be used
+        by Polaris
     :param quote: the ``QuoteIntegration`` subclass instance to be used by
         Polaris
     :raises ValueError: missing argument(s)
@@ -110,6 +118,8 @@ def register_integrations(
         raise TypeError("send must be a subclass of SEP31ReceiverIntegration")
     elif rails and not issubclass(rails.__class__, RailsIntegration):
         raise TypeError("rails must be a subclass of RailsIntegration")
+    elif custody and not issubclass(custody.__class__, CustodyIntegration):
+        raise TypeError("custody must be a subclass of CustodyIntegration")
     elif quote and not issubclass(quote.__class__, QuoteIntegration):
         raise TypeError("quote must be a subclass of QuoteIntegration")
 
@@ -122,6 +132,7 @@ def register_integrations(
         (customer, "registered_customer_integration"),
         (sep31_receiver, "registered_sep31_receiver_integration"),
         (rails, "registered_rails_integration"),
+        (custody, "registered_custody_integration"),
         (quote, "registered_quote_integration"),
     ]:
         if obj:

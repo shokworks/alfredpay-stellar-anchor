@@ -2,8 +2,8 @@ from datetime import timezone
 
 from rest_framework import serializers
 
-from polaris.models import Asset, Quote, OffChainAsset, DeliveryMethod
-from polaris.settings import DATETIME_FORMAT
+from core.polaris.models import Asset, Quote, OffChainAsset, DeliveryMethod
+from core.polaris.settings import DATETIME_FORMAT
 
 
 class QuoteSerializer(serializers.ModelSerializer):
@@ -93,13 +93,15 @@ class OffChainAssetSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_sell_delivery_methods(instance):
         return DeliveryMethodSerializer(
-            instance.delivery_methods.filter(type=DeliveryMethod.TYPE.sell), many=True,
+            instance.delivery_methods.filter(type=DeliveryMethod.TYPE.sell),
+            many=True,
         ).data
 
     @staticmethod
     def get_buy_delivery_methods(instance):
         return DeliveryMethodSerializer(
-            instance.delivery_methods.filter(type=DeliveryMethod.TYPE.buy), many=True,
+            instance.delivery_methods.filter(type=DeliveryMethod.TYPE.buy),
+            many=True,
         ).data
 
     class Meta:
