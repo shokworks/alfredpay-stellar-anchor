@@ -33,11 +33,11 @@ from stellar_sdk import Memo
 from requests import Response as RequestsResponse, RequestException, post
 from aiohttp import ClientResponse
 
-from polaris import settings
-from polaris.models import Transaction, Asset, Quote, OffChainAsset, ExchangePair
-from polaris.sep10.token import SEP10Token
-from polaris.sep38.utils import asset_id_to_kwargs
-from polaris.shared.serializers import TransactionSerializer
+from core.polaris import settings
+from core.polaris.models import Transaction, Asset, Quote, OffChainAsset, ExchangePair
+from core.polaris.sep10.token import SEP10Token
+from core.polaris.sep38.utils import asset_id_to_kwargs
+from core.polaris.shared.serializers import TransactionSerializer
 
 
 logger = getLogger(__name__)
@@ -56,7 +56,7 @@ def render_error_response(
     resp_data = {"data": {"error": description}, "status": status_code}
     if as_html:
         resp_data["data"]["status_code"] = str(status_code)
-        resp_data["template_name"] = "polaris/error.html"
+        resp_data["template_name"] = "core.polaris/error.html"
     return Response(**resp_data)
 
 

@@ -29,8 +29,12 @@ def env_or_settings(variable, required=True, bool=False, list=False, int=False):
             return None
 
 
+POLARIS_CORE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+POLARIS_BASE_DIR = os.path.abspath(os.path.join(POLARIS_CORE_DIR, '../'))
 env = environ.Env()
-env_file = os.path.join(getattr(settings, "BASE_DIR", ""), ".env")
+env_file = os.path.abspath(os.path.join(POLARIS_BASE_DIR, 'etc/.env'))
+
+
 if os.path.exists(env_file):
     env.read_env(env_file)
 elif hasattr(settings, "POLARIS_ENV_PATH"):

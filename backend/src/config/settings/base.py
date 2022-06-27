@@ -4,10 +4,17 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
 
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SETTINGS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, '../'))
+
+"""
+    SETTINGS_DIR: /home/Josean/Scripts/Django/stellar-anchor/backend/src/config
+    BASE_DIR: /home/Josean/Scripts/Django/stellar-anchor/backend/src
+"""
 
 env = environ.Env()
-env_file = str(BASE_DIR).split("config")[0] + "etc/.env"
+env_file = os.path.abspath(os.path.join(BASE_DIR, 'etc/.env'))
+
 
 try:
     os.path.exists(env_file)
@@ -20,8 +27,6 @@ SECRET_KEY = env("SECRET_KEY")
 MULT_ASSET_ADDITIONAL_SIGNING_SEED = env(
     "MULT_ASSET_ADDITIONAL_SIGNING_SEED", default=None
 )
-
-DEBUG = env.bool("DJANGO_DEBUG", False)
 
 ALLOWED_HOSTS = env.list(
     "DJANGO_ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "[::1]", "0.0.0.0"]
@@ -80,7 +85,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, "templates")],
+        'DIRS': [os.path.join(SETTINGS_DIR, "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -94,23 +99,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-
-try:
-    DATABASES = {
-        'default': {
-            'ENGINE': env("DB_ENGINE"),
-            'NAME': env("DB_NAME"),
-            'USER': env("DB_USER"),
-            'PASSWORD': env("DB_PASSWORD"),
-            'HOST': env("DB_HOST"),
-            'PORT': env("DB_PORT"),
-        }
-    }
-
-except:
-    raise ImproperlyConfigured(f"Problems with the DATABASES file")
-
-DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+print(f"WSGI_APPLICATION: {WSGI_APPLICATION}")
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -137,15 +126,21 @@ LANGUAGES = [
     ("en", _("English")),
 ]
 
+
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
+
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
-STATIC_ROOT = os.path.join(BASE_DIR, "server/collectstatic")
+
 STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "server/collectstatic")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = '/media/'
 MEDIAFILES_DIRS = os.path.join(BASE_DIR, "server/media")
 MEDIA_ROOT = os.path.join(BASE_DIR, "server/media")
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [

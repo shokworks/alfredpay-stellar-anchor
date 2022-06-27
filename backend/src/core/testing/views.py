@@ -302,4 +302,4 @@ class MySEP10Auth(SEP10Auth):
 
 class get_home(View):
     def get(self, request, *args, **kwargs):
-        return render(request, 'pruebas/plaid.html')
+        return render(request, 'pruebas/home.html')

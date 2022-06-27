@@ -150,7 +150,6 @@ def more_info(request: Request, sep6: bool = False) -> Response:
     try:
         content_from_anchor = (
             integration_class.content_for_template(
-                request=request, template=Template.MORE_INFO, transaction=transaction,
                 request=request,
                 template=Template.MORE_INFO,
                 transaction=transaction,
