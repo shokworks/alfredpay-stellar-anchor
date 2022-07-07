@@ -1,9 +1,17 @@
+import os
+import json
+
 from typing import Dict, Optional, List
 
+from rest_framework import status
 from rest_framework.request import Request
+from rest_framework.response import Response
 
 from core.polaris.models import Asset
 
+
+FILE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+json_file = os.path.abspath(os.path.join(FILE_DIR, 'integrations/sep6_info.json'))
 
 def default_info_func(
     request: Request,
@@ -68,7 +76,13 @@ def default_info_func(
         `deposit-exchange` or `withdraw-exchange` response object. Only
         relevant if SEP-38 is enabled.
     """
-    raise NotImplementedError()
+    try:
+        file = open(json_file, 'r')
+        sep6_info = json.load(file)
+        return sep6_info
+
+    except:
+        raise NotImplementedError()
 
 
 registered_info_func = default_info_func
