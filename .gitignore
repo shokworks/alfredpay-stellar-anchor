@@ -138,6 +138,9 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Archvios de Visual Code.
+.vscode*
+
 # Archivos del projecto.
 django-polaris*
 Documenta*
@@ -152,6 +155,7 @@ backend/src/core/testing/views-bkp.py
 backend/src/core/testing-bkp*
 backend/src/etc/*
 backend/src/media/*
+backend/src/testing_db.sqlite3
 etc-bkp*
 polaris_*
 prueba*
