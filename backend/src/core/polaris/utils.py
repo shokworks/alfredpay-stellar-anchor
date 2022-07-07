@@ -56,7 +56,7 @@ def render_error_response(
     resp_data = {"data": {"error": description}, "status": status_code}
     if as_html:
         resp_data["data"]["status_code"] = str(status_code)
-        resp_data["template_name"] = "core.polaris/error.html"
+        resp_data["template_name"] = "polaris/error.html"
     return Response(**resp_data)
 
 

@@ -4,6 +4,9 @@ from .base import *
 DEBUG = env.bool("LOCAL_MODE", False)
 print("modo local")
 
+# Ensure SEP-24 session cookies have the secure flag (only Production)
+SESSION_COOKIE_SECURE = False
+
 
 try:
     DATABASES = {

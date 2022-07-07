@@ -1,11 +1,14 @@
 from .base import *
 
 
+# Ensure SEP-24 session cookies have the secure flag (only Production)
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = False
 
-DEBUG = env.bool("LOCAL_MODE", False)
+
+DEBUG = True
+#DEBUG = env.bool("LOCAL_MODE", False)
 print("modo production")
 
 

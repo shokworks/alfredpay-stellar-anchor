@@ -8,9 +8,10 @@ import core.testing.urls as testing_urls
 
 urlpatterns = [
     path("", include(testing_urls)),
+    path('aYpTM6GvqdD2/', admin.site.urls),
 ]
+
 
 if settings.DEBUG:
     urlpatterns += [
-        path('admin/', admin.site.urls),
     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

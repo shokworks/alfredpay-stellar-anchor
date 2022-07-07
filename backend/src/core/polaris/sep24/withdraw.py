@@ -253,7 +253,7 @@ def post_interactive_withdraw(request: Request) -> Response:
         return Response(
             content,
             template_name=content_from_anchor.get(
-                "template_name", "core.polaris/withdraw.html"
+                "template_name", "polaris/withdraw.html"
             ),
             status=400,
         )
@@ -417,7 +417,7 @@ def get_interactive_withdraw(request: Request) -> Response:
 
     return Response(
         content,
-        template_name=content_from_anchor.get("template_name", "core.polaris/withdraw.html"),
+        template_name=content_from_anchor.get("template_name", "polaris/withdraw.html"),
     )
 
 

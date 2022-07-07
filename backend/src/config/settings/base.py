@@ -62,18 +62,15 @@ MIDDLEWARE = [
     'polaris.middleware.TimezoneMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# SEP24 Allow Custom Templates
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
 local_mode = env.bool("LOCAL_MODE", default=False)
-
-# Ensure SEP-24 session cookies have the secure flag
-SESSION_COOKIE_SECURE = not local_mode
 
 # Redirect HTTP to HTTPS if not in local mode
 SECURE_SSL_REDIRECT = not local_mode
@@ -99,7 +96,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-print(f"WSGI_APPLICATION: {WSGI_APPLICATION}")
 
 AUTH_PASSWORD_VALIDATORS = [
     {

@@ -234,7 +234,7 @@ def post_interactive_deposit(request: Request) -> Response:
         return Response(
             content,
             template_name=content_from_anchor.get(
-                "template_name", "core.polaris/deposit.html"
+                "template_name", "polaris/deposit.html"
             ),
             status=400,
         )
@@ -398,7 +398,7 @@ def get_interactive_deposit(request: Request) -> Response:
 
     return Response(
         content,
-        template_name=content_from_anchor.get("template_name", "core.polaris/deposit.html"),
+        template_name=content_from_anchor.get("template_name", "polaris/deposit.html"),
     )
 
 

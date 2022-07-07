@@ -171,7 +171,7 @@ def more_info(request: Request, sep6: bool = False) -> Response:
     return Response(
         context,
         template_name=content_from_anchor.get(
-            "template_name", "core.polaris/more_info.html"
+            "template_name", "polaris/more_info.html"
         ),
     )
 
