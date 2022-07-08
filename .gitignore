@@ -149,6 +149,7 @@ backend/src/base-dir
 backend/src/config/server/
 backend/src/core/polaris/migrations*
 backend/src/core/test.py
+backend/src/core/stellar_sdk*
 backend/src/core/testing/*.json
 backend/src/core/testing/tests2.py
 backend/src/core/testing/views-bkp.py
