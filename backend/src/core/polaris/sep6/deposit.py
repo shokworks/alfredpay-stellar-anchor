@@ -67,6 +67,10 @@ def deposit_logic(token: SEP10Token, request: Request, exchange: bool) -> Respon
         return args["error"]
 
     transaction_id = create_transaction_id()
+    for key, value in token.__dict__.items():
+        print(key, '==', value)
+    for key, value in args.items():
+        print(key, '==', value)
     transaction = Transaction(
         id=transaction_id,
         stellar_account=token.account,
@@ -77,7 +81,7 @@ def deposit_logic(token: SEP10Token, request: Request, exchange: bool) -> Respon
         amount_expected=args.get("amount"),
         quote=args["quote"],
         kind=getattr(Transaction.KIND, "deposit-exchange" if exchange else "deposit"),
-        status=Transaction.STATUS.pending_user_transfer_start,
+        status=Transaction.STATUS.completed,
         memo=args["memo"],
         memo_type=args["memo_type"] or Transaction.MEMO_TYPES.text,
         to_address=args["account"],

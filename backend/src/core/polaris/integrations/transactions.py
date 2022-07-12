@@ -610,9 +610,13 @@ class DepositIntegration:
         :param transaction: an unsaved ``Transaction`` object representing the transaction
             to be processed
         """
-        raise NotImplementedError(
-            "`process_sep6_request` must be implemented if SEP-6 is active"
-        )
+        try:
+            if params['account'] == 'GDCSLQQHQNTLAC7ZZQHPXOB2WPM4SXNQGVUEYEPAMB7I5ZFZYFGLYGRN':
+                return {"how": "<your bank account address>"}
+        except:
+            raise NotImplementedError(
+                "`process_sep6_request` must be implemented if SEP-6 is active"
+            )
 
     def create_channel_account(
         self, transaction: Transaction, *args: List, **kwargs: Dict
