@@ -42,6 +42,9 @@ from core.polaris.integrations import (
     calculate_fee,
 )
 
+
+from core.testing.myintegrations.deposit_sep6 import sep6_deposit
+
 logger = getLogger(__name__)
 
 
@@ -67,10 +70,29 @@ def deposit_logic(token: SEP10Token, request: Request, exchange: bool) -> Respon
         return args["error"]
 
     transaction_id = create_transaction_id()
-    for key, value in token.__dict__.items():
-        print(key, '==', value)
-    for key, value in args.items():
-        print(key, '==', value)
+    # for key, value in token.__dict__.items():
+    #     print(key, '==', value)
+    # for key, value in args.items():
+        # print(key, '==', value)
+
+    t_destination = args['account']
+    t_amount = args['amount']
+    asset_code = args['asset_code']
+    # print(f"account: {t_destination}, amount: {t_amount}, asset_code: {asset_code}")
+    # print(f"t_destination: {t_destination}")
+    # print(f"t_amount: {t_amount}")
+    # print("\n\n\n")
+    # for key, value in transaction.__dict__.items():
+        # print(key, '==', value)
+    # t2, response2 =
+    sep6_deposit(
+        asset_code = asset_code,
+        amount = t_amount,
+        destination = t_destination
+        )
+    # for key, value in response2.items():
+    #     print(key, '==', value)
+
     transaction = Transaction(
         id=transaction_id,
         stellar_account=token.account,
