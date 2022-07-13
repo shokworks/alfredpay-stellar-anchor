@@ -152,6 +152,7 @@ backend/src/core/testing/views-bkp.py
 backend/src/core/testing-bkp*
 backend/src/etc/*
 backend/src/media/*
+backend/src/testing_db.sqlite3
 etc-bkp*
 polaris_*
 prueba*
