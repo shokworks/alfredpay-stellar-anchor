@@ -40,6 +40,7 @@ from core.polaris.integrations import (
     calculate_fee,
     registered_custody_integration as rci,
 )
+from core.testing.myintegrations.withdraw_sep6 import sep6_withdraw
 
 logger = getLogger(__name__)
 
@@ -66,6 +67,14 @@ def withdraw_logic(token: SEP10Token, request: Request, exchange: bool):
         return args["error"]
 
     transaction_id = create_transaction_id()
+
+    t_amount = args['amount']
+    asset_code = args['asset_code']
+    sep6_withdraw(
+        asset_code = asset_code,
+        amount = t_amount,
+        )
+
     transaction = Transaction(
         id=transaction_id,
         stellar_account=token.account,
@@ -78,7 +87,7 @@ def withdraw_logic(token: SEP10Token, request: Request, exchange: bool):
         kind=getattr(
             Transaction.KIND, "withdrawal-exchange" if exchange else "withdrawal"
         ),
-        status=Transaction.STATUS.pending_user_transfer_start,
+        status=Transaction.STATUS.completed,
         protocol=Transaction.PROTOCOL.sep6,
         more_info_url=request.build_absolute_uri(
             f"{SEP6_MORE_INFO_PATH}?id={transaction_id}"

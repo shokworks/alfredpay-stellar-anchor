@@ -7,8 +7,8 @@ CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = False
 
 
-DEBUG = True
-#DEBUG = env.bool("LOCAL_MODE", False)
+# DEBUG = True
+DEBUG = env.  bool("LOCAL_MODE", False)
 print("modo production")
 
 

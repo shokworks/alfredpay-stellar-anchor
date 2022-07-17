@@ -611,7 +611,7 @@ class DepositIntegration:
             to be processed
         """
         try:
-            if params['account'] == 'GDCSLQQHQNTLAC7ZZQHPXOB2WPM4SXNQGVUEYEPAMB7I5ZFZYFGLYGRN':
+            if params['account'] == 'GAOUMTA5OX5VPGTEDPQEWDX5T3JZOMG4B3YAZRDXBVJSBBPRK4YPMD6S':
                 return {"how": "<your bank account address>"}
         except:
             raise NotImplementedError(
@@ -851,9 +851,13 @@ class WithdrawalIntegration:
         and `Customer Information Status`_ responses as described in
         ``DepositIntegration.process_sep6_request``.
         """
-        raise NotImplementedError(
-            "`process_sep6_request` must be implemented if SEP-6 is active"
-        )
+        try:
+            if params['account'] == 'GAOUMTA5OX5VPGTEDPQEWDX5T3JZOMG4B3YAZRDXBVJSBBPRK4YPMD6S':
+                return {"how": "<your bank account address>"}
+        except:
+            raise NotImplementedError(
+                "`process_sep6_request` must be implemented if SEP-6 is active"
+            )
 
     def patch_transaction(
         self,
