@@ -22,7 +22,7 @@ except KeyError:
 
 SIGNING_SEED = env("SIGNING_SEED")
 SIGNER_SEED_TWO = env("SIGNER_SEED_TWO")
-print(f"SIGNER_SEED_TWO: {SIGNER_SEED_TWO}")
+
 
 def sep6_deposit(asset_code, amount):
     server = Server(horizon_url="https://horizon-testnet.stellar.org")
