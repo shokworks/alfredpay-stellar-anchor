@@ -1,6 +1,6 @@
 from typing import List
-from polaris.integrations import RailsIntegration
-from polaris.models import Transaction
+from core.polaris.integrations import RailsIntegration
+from core.polaris.models import Transaction
 from django.db.models import QuerySet
 
 

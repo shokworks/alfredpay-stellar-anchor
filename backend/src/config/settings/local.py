@@ -1,38 +1,29 @@
 from .base import *
 
 
-DEBUG = True
+DEBUG = env.bool("LOCAL_MODE", True)
+print("modo local")
+
+# Ensure SEP-24 session cookies have the secure flag (only Production)
+SESSION_COOKIE_SECURE = False
 
 
-DATABASES = config["DATABASES"]
-
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+try:
+    DATABASES = {
+        'default': {
+            'ENGINE': env("DB_ENGINE_LOCAL"),
+            'NAME': env("DB_NAME_LOCAL"),
+            'USER': env("DB_USER_LOCAL"),
+            'PASSWORD': env("DB_PASSWORD_LOCAL"),
+            'HOST': env("DB_HOST"),
+            'PORT': env("DB_PORT"),
         }
-    },
-    'loggers': {
-        'myapp': {
-            'handlers': ['console'],
-            'propogate': True,
-            'LEVEL': 'DEBUG'
-        },
-        'polaris': {
-            'handlers': ['console'],
-            'propagate': True,
-            'LEVEL': 'INFO'
-        },
     }
-}
+except:
+    print(f"Problems with the DATABASES file")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': 'testing_db.sqlite3',
+        }
+    }

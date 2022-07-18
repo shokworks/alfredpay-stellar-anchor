@@ -2,29 +2,28 @@ from django.apps import AppConfig
 
 
 class TestingConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'core.testing'
+    name = "core.testing"
+    default_auto_field = "django.db.models.BigAutoField"
 
-"""
+
 def ready(self):
-    from polaris.integrations import register_integrations
-    from integrations import (
+    from core.polaris.integrations import register_integrations
+    from myintegrations import (
         MyRailsIntegration,
-        # MyDepositIntegration,
-        # MyWithdrawalIntegration,
+        MyDepositIntegration,
+        MyWithdrawalIntegration,
         # MyCustomerIntegration,
         # toml_integration,
-        # fee_integrations,
+        # registered_fee_func,
         # scripts_integration,
-        # info_integration
+        info_integration
     )
 
     register_integrations(
         deposit=MyDepositIntegration(),
         withdrawal=MyWithdrawalIntegration(),
-        customer=MyCustomerIntegration(),
-        toml=toml_integration,
+        # customer=MyCustomerIntegration(),
+        # toml=toml_integration,
         sep6_info=info_integration,
-        fee=fee_integration
+        # fee=registered_fee_func
     )
-"""
