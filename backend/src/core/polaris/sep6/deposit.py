@@ -42,6 +42,9 @@ from core.polaris.integrations import (
     calculate_fee,
 )
 
+
+from core.testing.myintegrations.deposit_sep6 import sep6_deposit
+
 logger = getLogger(__name__)
 
 
@@ -67,6 +70,12 @@ def deposit_logic(token: SEP10Token, request: Request, exchange: bool) -> Respon
         return args["error"]
 
     transaction_id = create_transaction_id()
+    t_amount = args['amount']
+    asset_code = args['asset_code']
+    sep6_deposit(
+        asset_code = asset_code,
+        amount = t_amount,
+        )
     transaction = Transaction(
         id=transaction_id,
         stellar_account=token.account,
@@ -77,7 +86,7 @@ def deposit_logic(token: SEP10Token, request: Request, exchange: bool) -> Respon
         amount_expected=args.get("amount"),
         quote=args["quote"],
         kind=getattr(Transaction.KIND, "deposit-exchange" if exchange else "deposit"),
-        status=Transaction.STATUS.pending_user_transfer_start,
+        status=Transaction.STATUS.completed,
         memo=args["memo"],
         memo_type=args["memo_type"] or Transaction.MEMO_TYPES.text,
         to_address=args["account"],

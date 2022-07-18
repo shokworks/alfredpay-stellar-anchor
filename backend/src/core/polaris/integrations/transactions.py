@@ -1,14 +1,34 @@
+import os
+import environ
 from typing import Dict, Optional, List
 from decimal import Decimal
 
 from django import forms
 from django.http import QueryDict
+from django.core.exceptions import ImproperlyConfigured
+from django.utils.translation import gettext_lazy as _
 from rest_framework.request import Request
 
 from core.polaris.models import Transaction, Asset
 from core.polaris.integrations.forms import TransactionForm
 from core.polaris.templates import Template
 from core.polaris.sep10.token import SEP10Token
+
+
+SETTINGS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.abspath(os.path.join(SETTINGS_DIR, '../..'))
+
+env = environ.Env()
+env_file = os.path.abspath(os.path.join(BASE_DIR, 'etc/.env'))
+
+try:
+    os.path.exists(env_file)
+    environ.Env.read_env(env_file)
+except KeyError:
+    raise ImproperlyConfigured(f"Problems with the {env_file} file")
+
+SIGNER_KEY_TWO = env("SIGNER_KEY_TWO")
+print(f"core polaris integrations SIGNER_KEY_TWO: {SIGNER_KEY_TWO}")
 
 
 class DepositIntegration:
@@ -610,9 +630,13 @@ class DepositIntegration:
         :param transaction: an unsaved ``Transaction`` object representing the transaction
             to be processed
         """
-        raise NotImplementedError(
-            "`process_sep6_request` must be implemented if SEP-6 is active"
-        )
+        try:
+            if params['account'] == SIGNER_KEY_TWO:
+                return {"how": "<your bank account address>"}
+        except:
+            raise NotImplementedError(
+                "`process_sep6_request` must be implemented if SEP-6 is active"
+            )
 
     def create_channel_account(
         self, transaction: Transaction, *args: List, **kwargs: Dict
@@ -847,9 +871,13 @@ class WithdrawalIntegration:
         and `Customer Information Status`_ responses as described in
         ``DepositIntegration.process_sep6_request``.
         """
-        raise NotImplementedError(
-            "`process_sep6_request` must be implemented if SEP-6 is active"
-        )
+        try:
+            if params['account'] == SIGNER_KEY_TWO:
+                return {"how": "<your bank account address>"}
+        except:
+            raise NotImplementedError(
+                "`process_sep6_request` must be implemented if SEP-6 is active"
+            )
 
     def patch_transaction(
         self,

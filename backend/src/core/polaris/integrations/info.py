@@ -9,6 +9,8 @@ from rest_framework.response import Response
 
 from core.polaris.models import Asset
 
+FILE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+json_file = os.path.abspath(os.path.join(FILE_DIR, 'integrations/sep6_info.json'))
 
 FILE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 json_file = os.path.abspath(os.path.join(FILE_DIR, 'integrations/sep6_info.json'))

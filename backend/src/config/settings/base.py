@@ -129,13 +129,19 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
 
-STATIC_URL = "/static/"
+# The absolute path to the directory where collectstatic will collect static files for deployment.
+# Example: "/var/www/example.com/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "server/collectstatic")
+# URL to use when referring to static files located in STATIC_ROOT.
+# Example: "/static/" or "http://static.example.com/"
+STATIC_URL = "/static/"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-MEDIA_URL = '/media/'
-MEDIAFILES_DIRS = os.path.join(BASE_DIR, "server/media")
+# Absolute filesystem path to the directory that will hold user-uploaded files.
+# Example: "/var/www/example.com/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "server/media")
+# if settings.DEBUG is True.
+MEDIA_URL = '/media/'
 
 
 REST_FRAMEWORK = {

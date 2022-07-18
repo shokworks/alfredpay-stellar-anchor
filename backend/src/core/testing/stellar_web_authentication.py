@@ -18,6 +18,8 @@ from stellar_sdk.exceptions import (
     ValueError,
     FeatureNotEnabledError
     )
+from stellar_sdk.type_checked import type_checked
+
 
 __all__ = [
     "build_challenge_transaction",
@@ -28,9 +30,11 @@ __all__ = [
     "verify_challenge_transaction",
 ]
 
+
 MUXED_ACCOUNT_STARTING_LETTER: str = "M"
 
 
+@type_checked
 class ChallengeTransaction:
     """Used to store the results produced
     by :func:`stellar_sdk.sep.stellar_web_authentication.read_challenge_transaction`.
@@ -55,7 +59,7 @@ class ChallengeTransaction:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
-            return NotImplemented  # pragma: no cover
+            return NotImplemented
         return (
             self.transaction == other.transaction
             and self.client_account_id == other.client_account_id
@@ -67,6 +71,7 @@ class ChallengeTransaction:
         return f"<ChallengeTransaction [transaction={self.transaction}, client_account_id={self.client_account_id}, memo={self.memo}, matched_home_domain={self.matched_home_domain}]>"
 
 
+@type_checked
 def build_challenge_transaction(
     server_secret: str,
     client_account_id: str,
@@ -82,12 +87,13 @@ def build_challenge_transaction(
     challenge transaction which you can use for Stellar Web Authentication.
 
     :param server_secret: secret key for server's stellar.toml `SIGNING_KEY`.
-    :param client_account_id: The stellar account (`G...`) or muxed account (`M...`) that the wallet wishes to authenticate with the server.
+    :param client_account_id: The stellar account (``G...``) or
+        muxed account (``M...``) that the wallet wishes to authenticate with the server.
     :param home_domain: The `fully qualified domain name <https://en.wikipedia.org/wiki/Fully_qualified_home_domain>`_
-        of the service requiring authentication, for example: `example.com`.
+        of the service requiring authentication (ex. ``"example.com"``).
     :param web_auth_domain: The fully qualified domain name of the service issuing the challenge.
     :param network_passphrase: The network to connect to for verifying and retrieving
-        additional attributes from. (ex. 'Public Global Stellar Network ; September 2015')
+        additional attributes from. (ex. ``"Public Global Stellar Network ; September 2015"``)
     :param timeout: Challenge duration in seconds (default to 15 minutes).
     :param client_domain: The domain of the client application requesting authentication
     :param client_signing_key: The stellar account listed as the SIGNING_KEY on the client domain's TOML file
@@ -98,12 +104,10 @@ def build_challenge_transaction(
         raise ValueError(
             "memos are not valid for challenge transactions with a muxed client account"
         )
-    if memo and not isinstance(memo, int):
-        raise ValueError("memo must be an integer")
 
     now = int(time.time())
     server_keypair = Keypair.from_secret(server_secret)
-    server_account = Account(account_id=server_keypair.public_key, sequence=-1)
+    server_account = Account(account=server_keypair.public_key, sequence=-1)
     transaction_builder = TransactionBuilder(server_account, network_passphrase, 100)
     transaction_builder.add_time_bounds(min_time=now, max_time=now + timeout)
     nonce = os.urandom(48)
@@ -134,6 +138,7 @@ def build_challenge_transaction(
     return transaction.to_xdr()
 
 
+@type_checked
 def read_challenge_transaction(
     challenge_transaction: str,
     server_account_id: str,
@@ -148,8 +153,9 @@ def read_challenge_transaction(
     It does not verify that the transaction has been signed by the client or
     that any signatures other than the servers on the transaction are valid. Use
     one of the following functions to completely verify the transaction:
-        - :func:`stellar_sdk.sep.stellar_web_authentication.verify_challenge_transaction_threshold`
-        - :func:`stellar_sdk.sep.stellar_web_authentication.verify_challenge_transaction_signers`
+
+    * :func:`stellar_sdk.sep.stellar_web_authentication.verify_challenge_transaction_threshold`
+    * :func:`stellar_sdk.sep.stellar_web_authentication.verify_challenge_transaction_signers`
 
     :param challenge_transaction: SEP0010 transaction challenge transaction in base64.
     :param server_account_id: public key for server's account.
@@ -158,7 +164,7 @@ def read_challenge_transaction(
     :param web_auth_domain: The home domain that is expected to be included as the value of the Manage Data operation with
         the 'web_auth_domain' key. If no such operation is included, this parameter is not used.
     :param network_passphrase: The network to connect to for verifying and retrieving
-        additional attributes from. (ex. 'Public Global Stellar Network ; September 2015')
+        additional attributes from. (ex. ``"Public Global Stellar Network ; September 2015"``)
     :raises: :exc:`InvalidSep10ChallengeError <stellar_sdk.sep.exceptions.InvalidSep10ChallengeError>` - if the
         validation fails, the exception will be thrown.
     """
@@ -205,11 +211,11 @@ def read_challenge_transaction(
         )
 
     # verify that transaction has time bounds set, and that current time is between the minimum and maximum bounds
-    if not transaction.time_bounds:
+    if not transaction.preconditions or not transaction.preconditions.time_bounds:
         raise InvalidSep10ChallengeError("Transaction requires timebounds.")
 
-    max_time = transaction.time_bounds.max_time
-    min_time = transaction.time_bounds.min_time
+    max_time = transaction.preconditions.time_bounds.max_time
+    min_time = transaction.preconditions.time_bounds.min_time
 
     if max_time == 0:
         raise InvalidSep10ChallengeError(
@@ -326,6 +332,7 @@ def read_challenge_transaction(
     )
 
 
+@type_checked
 def verify_challenge_transaction_signers(
     challenge_transaction: str,
     server_account_id: str,
@@ -349,7 +356,7 @@ def verify_challenge_transaction_signers(
     :param web_auth_domain: The home domain that is expected to be included as the value of the Manage Data
         operation with the 'web_auth_domain' key, if present.
     :param network_passphrase: The network to connect to for verifying and retrieving
-        additional attributes from. (ex. 'Public Global Stellar Network ; September 2015')
+        additional attributes from. (ex. ``"Public Global Stellar Network ; September 2015"``)
     :param signers: The signers of client account.
 
     :raises: :exc:`InvalidSep10ChallengeError <stellar_sdk.sep.exceptions.InvalidSep10ChallengeError>`:
@@ -389,11 +396,11 @@ def verify_challenge_transaction_signers(
         if signer == server_keypair.public_key:
             continue
         client_signers.append(signer)
+
     # Verify all the transaction's signers (server and client) in one
     # hit. We do this in one hit here even though the server signature was
     # checked in the read_challenge_transaction to ensure that every signature and signer
     # are consumed only once on the transaction.
-
     additional_signers = [Ed25519PublicKeySigner(server_keypair.public_key)]
     if client_signing_key:
         additional_signers.append(Ed25519PublicKeySigner(client_signing_key.account_id))
@@ -427,7 +434,7 @@ def verify_challenge_transaction_signers(
 
     if client_signing_key and not client_signing_key_found:
         raise InvalidSep10ChallengeError(
-            f"Transaction not signed by the source account of the 'client_domain' "
+            "Transaction not signed by the source account of the 'client_domain' "
             "ManageData operation"
         )
 
@@ -442,6 +449,7 @@ def verify_challenge_transaction_signers(
     return signers_found
 
 
+@type_checked
 def verify_challenge_transaction_signed_by_client_master_key(
     challenge_transaction: str,
     server_account_id: str,
@@ -458,7 +466,7 @@ def verify_challenge_transaction_signed_by_client_master_key(
     :param web_auth_domain: The home domain that is expected to be included as the value of the Manage Data operation with
         the 'web_auth_domain' key. If no such operation is included, this parameter is not used.
     :param network_passphrase: The network to connect to for verifying and retrieving
-        additional attributes from. (ex. 'Public Global Stellar Network ; September 2015')
+        additional attributes from. (ex. ``"Public Global Stellar Network ; September 2015"``)
 
     :raises: :exc:`InvalidSep10ChallengeError <stellar_sdk.sep.exceptions.InvalidSep10ChallengeError>` - if the
         validation fails, the exception will be thrown.
@@ -473,6 +481,7 @@ def verify_challenge_transaction_signed_by_client_master_key(
     )
 
 
+@type_checked
 def verify_challenge_transaction_threshold(
     challenge_transaction: str,
     server_account_id: str,
@@ -496,7 +505,7 @@ def verify_challenge_transaction_threshold(
     :param web_auth_domain: The home domain that is expected to be included as the value of the Manage Data operation with
         the 'web_auth_domain' key. If no such operation is included, this parameter is not used.
     :param network_passphrase: The network to connect to for verifying and retrieving
-        additional attributes from. (ex. 'Public Global Stellar Network ; September 2015')
+        additional attributes from. (ex. ``"Public Global Stellar Network ; September 2015"``)
     :param threshold: The medThreshold on the client account.
     :param signers: The signers of client account.
 
@@ -523,6 +532,7 @@ def verify_challenge_transaction_threshold(
     return signers_found
 
 
+@type_checked
 def verify_challenge_transaction(
     challenge_transaction: str,
     server_account_id: str,
@@ -548,9 +558,9 @@ def verify_challenge_transaction(
     :param home_domains: The home domain that is expected to be included in the first Manage Data operation's string
         key. If a list is provided, one of the domain names in the array must match.
     :param web_auth_domain: The home domain that is expected to be included as the value of the Manage Data
-        operation with the 'web_auth_domain' key, if present.
+        operation with the `web_auth_domain` key, if present.
     :param network_passphrase: The network to connect to for verifying and retrieving
-        additional attributes from. (ex. 'Public Global Stellar Network ; September 2015')
+        additional attributes from. (ex. ``"Public Global Stellar Network ; September 2015"``)
     :raises: :exc:`InvalidSep10ChallengeError <stellar_sdk.sep.exceptions.InvalidSep10ChallengeError>` - if the
         validation fails, the exception will be thrown.
     """
@@ -601,10 +611,10 @@ def _verify_transaction_signatures(
             # See https://github.com/StellarCN/py-stellar-base/issues/252#issuecomment-580882560
             if index in signature_used:
                 continue
-            if decorated_signature.hint.signature_hint != kp.signature_hint():
+            if decorated_signature.signature_hint != kp.signature_hint():
                 continue
             try:
-                kp.verify(tx_hash, decorated_signature.signature.signature)
+                kp.verify(tx_hash, decorated_signature.signature)
                 signature_used.add(index)
                 signers_found.append(signer)
                 break
