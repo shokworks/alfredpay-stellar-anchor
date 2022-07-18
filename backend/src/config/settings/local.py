@@ -1,7 +1,7 @@
 from .base import *
 
 
-DEBUG = env.bool("LOCAL_MODE", False)
+DEBUG = env.bool("LOCAL_MODE", True)
 print("modo local")
 
 # Ensure SEP-24 session cookies have the secure flag (only Production)
